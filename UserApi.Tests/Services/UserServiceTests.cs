@@ -152,7 +152,7 @@ namespace UserApi.Tests.Services
             result.LastName.Should().Be(updateUserDto.LastName);
             result.Email.Should().Be(updateUserDto.Email);
             result.PhoneNumber.Should().Be(updateUserDto.PhoneNumber);
-            result.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1));
+            result.UpdatedAt.Should().BeAfter(result.CreatedAt);
         }
 
         [Fact]
