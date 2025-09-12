@@ -1,0 +1,31 @@
+# Simple Dockerfile for running tests
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS test
+WORKDIR /src
+
+# Copy project files
+COPY *.sln ./
+COPY *.csproj ./
+COPY UserApi.Tests/*.csproj ./UserApi.Tests/
+COPY Directory.Build.props ./
+COPY global.json ./
+
+# Restore dependencies
+RUN dotnet restore
+
+# Copy source code
+COPY . .
+
+# Run tests and show output
+RUN echo "Running tests..." && \
+    dotnet test --verbosity normal --logger "console;verbosity=detailed" && \
+    echo "Tests completed successfully!"
+
+# Run tests with coverage
+RUN echo "Running tests with coverage..." && \
+    dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage --verbosity normal --logger "console;verbosity=detailed" && \
+    echo "Coverage tests completed!"
+
+# List all files in coverage directory
+RUN echo "Listing coverage directory contents:" && \
+    ls -la coverage/ || echo "Coverage directory not found" && \
+    find . -name "*.xml" -type f | head -10 || echo "No XML files found"

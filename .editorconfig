@@ -1,0 +1,308 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{cs,vb}]
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+# C# formatting rules
+[*.cs]
+# New line preferences
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+csharp_new_line_between_query_expression_clauses = true
+
+# Indentation preferences
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_indent_labels = flush_left
+
+# Space preferences
+csharp_space_after_cast = false
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_method_call_parameter_list_parentheses = false
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_parentheses = false
+csharp_space_before_colon_in_inheritance_clause = true
+csharp_space_after_colon_in_inheritance_clause = true
+csharp_space_around_binary_operators = before_and_after
+csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+csharp_space_between_method_call_name_and_opening_parenthesis = false
+csharp_space_between_method_call_empty_parameter_list_parentheses = false
+
+# Wrapping preferences
+csharp_preserve_single_line_statements = true
+csharp_preserve_single_line_blocks = true
+
+# Code style rules
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
+dotnet_style_predefined_type_for_member_access = true:suggestion
+dotnet_style_require_accessibility_modifiers = always:suggestion
+dotnet_style_readonly_field = true:suggestion
+
+# Expression-level preferences
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_explicit_tuple_names = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+dotnet_style_prefer_inferred_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
+dotnet_style_prefer_auto_properties = true:silent
+dotnet_style_prefer_conditional_expression_over_assignment = true:silent
+dotnet_style_prefer_conditional_expression_over_return = true:silent
+
+# C# preferences
+csharp_prefer_braces = true:warning
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_deconstructed_variable_declaration = true:suggestion
+csharp_prefer_simple_default_expression = true:suggestion
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+csharp_style_inlined_variable_declaration = true:suggestion
+
+# Naming conventions
+dotnet_naming_rule.interface_should_be_prefixed_with_i.severity = warning
+dotnet_naming_rule.interface_should_be_prefixed_with_i.symbols = interface
+dotnet_naming_rule.interface_should_be_prefixed_with_i.symbols.applicable_kinds = interface
+dotnet_naming_rule.interface_should_be_prefixed_with_i.symbols.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+dotnet_naming_rule.interface_should_be_prefixed_with_i.symbols.required_modifiers = 
+dotnet_naming_rule.interface_should_be_prefixed_with_i.symbols.required_prefixes = I
+dotnet_naming_rule.interface_should_be_prefixed_with_i.symbols.required_suffixes = 
+dotnet_naming_rule.interface_should_be_prefixed_with_i.symbols.word_separator = 
+
+dotnet_naming_rule.types_should_be_pascal_case.severity = warning
+dotnet_naming_rule.types_should_be_pascal_case.symbols = types
+dotnet_naming_rule.types_should_be_pascal_case.symbols.applicable_kinds = class, struct, interface, enum
+dotnet_naming_rule.types_should_be_pascal_case.symbols.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+dotnet_naming_rule.types_should_be_pascal_case.symbols.required_modifiers = 
+dotnet_naming_rule.types_should_be_pascal_case.symbols.required_prefixes = 
+dotnet_naming_rule.types_should_be_pascal_case.symbols.required_suffixes = 
+dotnet_naming_rule.types_should_be_pascal_case.symbols.word_separator = 
+
+dotnet_naming_rule.non_field_members_should_be_pascal_case.severity = warning
+dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols = non_field_members
+dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols.applicable_kinds = property, event, method
+dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols.required_modifiers = 
+dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols.required_prefixes = 
+dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols.required_suffixes = 
+dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols.word_separator = 
+
+# Analyzer rules
+dotnet_diagnostic.CA1303.severity = none
+dotnet_diagnostic.CA1305.severity = none
+dotnet_diagnostic.CA1307.severity = none
+dotnet_diagnostic.CA1309.severity = none
+dotnet_diagnostic.CA1310.severity = none
+dotnet_diagnostic.CA1311.severity = none
+dotnet_diagnostic.CA1312.severity = none
+dotnet_diagnostic.CA1313.severity = none
+dotnet_diagnostic.CA1314.severity = none
+dotnet_diagnostic.CA1315.severity = none
+dotnet_diagnostic.CA1316.severity = none
+dotnet_diagnostic.CA1317.severity = none
+dotnet_diagnostic.CA1318.severity = none
+dotnet_diagnostic.CA1319.severity = none
+dotnet_diagnostic.CA1320.severity = none
+dotnet_diagnostic.CA1321.severity = none
+dotnet_diagnostic.CA1322.severity = none
+dotnet_diagnostic.CA1323.severity = none
+dotnet_diagnostic.CA1324.severity = none
+dotnet_diagnostic.CA1325.severity = none
+dotnet_diagnostic.CA1326.severity = none
+dotnet_diagnostic.CA1327.severity = none
+dotnet_diagnostic.CA1328.severity = none
+dotnet_diagnostic.CA1329.severity = none
+dotnet_diagnostic.CA1330.severity = none
+dotnet_diagnostic.CA1331.severity = none
+dotnet_diagnostic.CA1332.severity = none
+dotnet_diagnostic.CA1333.severity = none
+dotnet_diagnostic.CA1334.severity = none
+dotnet_diagnostic.CA1335.severity = none
+dotnet_diagnostic.CA1336.severity = none
+dotnet_diagnostic.CA1337.severity = none
+dotnet_diagnostic.CA1338.severity = none
+dotnet_diagnostic.CA1339.severity = none
+dotnet_diagnostic.CA1340.severity = none
+dotnet_diagnostic.CA1341.severity = none
+dotnet_diagnostic.CA1342.severity = none
+dotnet_diagnostic.CA1343.severity = none
+dotnet_diagnostic.CA1344.severity = none
+dotnet_diagnostic.CA1345.severity = none
+dotnet_diagnostic.CA1346.severity = none
+dotnet_diagnostic.CA1347.severity = none
+dotnet_diagnostic.CA1348.severity = none
+dotnet_diagnostic.CA1349.severity = none
+dotnet_diagnostic.CA1350.severity = none
+dotnet_diagnostic.CA1351.severity = none
+dotnet_diagnostic.CA1352.severity = none
+dotnet_diagnostic.CA1353.severity = none
+dotnet_diagnostic.CA1354.severity = none
+dotnet_diagnostic.CA1355.severity = none
+dotnet_diagnostic.CA1356.severity = none
+dotnet_diagnostic.CA1357.severity = none
+dotnet_diagnostic.CA1358.severity = none
+dotnet_diagnostic.CA1359.severity = none
+dotnet_diagnostic.CA1360.severity = none
+dotnet_diagnostic.CA1361.severity = none
+dotnet_diagnostic.CA1362.severity = none
+dotnet_diagnostic.CA1363.severity = none
+dotnet_diagnostic.CA1364.severity = none
+dotnet_diagnostic.CA1365.severity = none
+dotnet_diagnostic.CA1366.severity = none
+dotnet_diagnostic.CA1367.severity = none
+dotnet_diagnostic.CA1368.severity = none
+dotnet_diagnostic.CA1369.severity = none
+dotnet_diagnostic.CA1370.severity = none
+dotnet_diagnostic.CA1371.severity = none
+dotnet_diagnostic.CA1372.severity = none
+dotnet_diagnostic.CA1373.severity = none
+dotnet_diagnostic.CA1374.severity = none
+dotnet_diagnostic.CA1375.severity = none
+dotnet_diagnostic.CA1376.severity = none
+dotnet_diagnostic.CA1377.severity = none
+dotnet_diagnostic.CA1378.severity = none
+dotnet_diagnostic.CA1379.severity = none
+dotnet_diagnostic.CA1380.severity = none
+dotnet_diagnostic.CA1381.severity = none
+dotnet_diagnostic.CA1382.severity = none
+dotnet_diagnostic.CA1383.severity = none
+dotnet_diagnostic.CA1384.severity = none
+dotnet_diagnostic.CA1385.severity = none
+dotnet_diagnostic.CA1386.severity = none
+dotnet_diagnostic.CA1387.severity = none
+dotnet_diagnostic.CA1388.severity = none
+dotnet_diagnostic.CA1389.severity = none
+dotnet_diagnostic.CA1390.severity = none
+dotnet_diagnostic.CA1391.severity = none
+dotnet_diagnostic.CA1392.severity = none
+dotnet_diagnostic.CA1393.severity = none
+dotnet_diagnostic.CA1394.severity = none
+dotnet_diagnostic.CA1395.severity = none
+dotnet_diagnostic.CA1396.severity = none
+dotnet_diagnostic.CA1397.severity = none
+dotnet_diagnostic.CA1398.severity = none
+dotnet_diagnostic.CA1399.severity = none
+dotnet_diagnostic.CA1400.severity = none
+dotnet_diagnostic.CA1401.severity = none
+dotnet_diagnostic.CA1402.severity = none
+dotnet_diagnostic.CA1403.severity = none
+dotnet_diagnostic.CA1404.severity = none
+dotnet_diagnostic.CA1405.severity = none
+dotnet_diagnostic.CA1406.severity = none
+dotnet_diagnostic.CA1407.severity = none
+dotnet_diagnostic.CA1408.severity = none
+dotnet_diagnostic.CA1409.severity = none
+dotnet_diagnostic.CA1410.severity = none
+dotnet_diagnostic.CA1411.severity = none
+dotnet_diagnostic.CA1412.severity = none
+dotnet_diagnostic.CA1413.severity = none
+dotnet_diagnostic.CA1414.severity = none
+dotnet_diagnostic.CA1415.severity = none
+dotnet_diagnostic.CA1416.severity = none
+dotnet_diagnostic.CA1417.severity = none
+dotnet_diagnostic.CA1418.severity = none
+dotnet_diagnostic.CA1419.severity = none
+dotnet_diagnostic.CA1420.severity = none
+dotnet_diagnostic.CA1421.severity = none
+dotnet_diagnostic.CA1422.severity = none
+dotnet_diagnostic.CA1423.severity = none
+dotnet_diagnostic.CA1424.severity = none
+dotnet_diagnostic.CA1425.severity = none
+dotnet_diagnostic.CA1426.severity = none
+dotnet_diagnostic.CA1427.severity = none
+dotnet_diagnostic.CA1428.severity = none
+dotnet_diagnostic.CA1429.severity = none
+dotnet_diagnostic.CA1430.severity = none
+dotnet_diagnostic.CA1431.severity = none
+dotnet_diagnostic.CA1432.severity = none
+dotnet_diagnostic.CA1433.severity = none
+dotnet_diagnostic.CA1434.severity = none
+dotnet_diagnostic.CA1435.severity = none
+dotnet_diagnostic.CA1436.severity = none
+dotnet_diagnostic.CA1437.severity = none
+dotnet_diagnostic.CA1438.severity = none
+dotnet_diagnostic.CA1439.severity = none
+dotnet_diagnostic.CA1440.severity = none
+dotnet_diagnostic.CA1441.severity = none
+dotnet_diagnostic.CA1442.severity = none
+dotnet_diagnostic.CA1443.severity = none
+dotnet_diagnostic.CA1444.severity = none
+dotnet_diagnostic.CA1445.severity = none
+dotnet_diagnostic.CA1446.severity = none
+dotnet_diagnostic.CA1447.severity = none
+dotnet_diagnostic.CA1448.severity = none
+dotnet_diagnostic.CA1449.severity = none
+dotnet_diagnostic.CA1450.severity = none
+dotnet_diagnostic.CA1451.severity = none
+dotnet_diagnostic.CA1452.severity = none
+dotnet_diagnostic.CA1453.severity = none
+dotnet_diagnostic.CA1454.severity = none
+dotnet_diagnostic.CA1455.severity = none
+dotnet_diagnostic.CA1456.severity = none
+dotnet_diagnostic.CA1457.severity = none
+dotnet_diagnostic.CA1458.severity = none
+dotnet_diagnostic.CA1459.severity = none
+dotnet_diagnostic.CA1460.severity = none
+dotnet_diagnostic.CA1461.severity = none
+dotnet_diagnostic.CA1462.severity = none
+dotnet_diagnostic.CA1463.severity = none
+dotnet_diagnostic.CA1464.severity = none
+dotnet_diagnostic.CA1465.severity = none
+dotnet_diagnostic.CA1466.severity = none
+dotnet_diagnostic.CA1467.severity = none
+dotnet_diagnostic.CA1468.severity = none
+dotnet_diagnostic.CA1469.severity = none
+dotnet_diagnostic.CA1470.severity = none
+dotnet_diagnostic.CA1471.severity = none
+dotnet_diagnostic.CA1472.severity = none
+dotnet_diagnostic.CA1473.severity = none
+dotnet_diagnostic.CA1474.severity = none
+dotnet_diagnostic.CA1475.severity = none
+dotnet_diagnostic.CA1476.severity = none
+dotnet_diagnostic.CA1477.severity = none
+dotnet_diagnostic.CA1478.severity = none
+dotnet_diagnostic.CA1479.severity = none
+dotnet_diagnostic.CA1480.severity = none
+dotnet_diagnostic.CA1481.severity = none
+dotnet_diagnostic.CA1482.severity = none
+dotnet_diagnostic.CA1483.severity = none
+dotnet_diagnostic.CA1484.severity = none
+dotnet_diagnostic.CA1485.severity = none
+dotnet_diagnostic.CA1486.severity = none
+dotnet_diagnostic.CA1487.severity = none
+dotnet_diagnostic.CA1488.severity = none
+dotnet_diagnostic.CA1489.severity = none
+dotnet_diagnostic.CA1490.severity = none
+dotnet_diagnostic.CA1491.severity = none
+dotnet_diagnostic.CA1492.severity = none
+dotnet_diagnostic.CA1493.severity = none
+dotnet_diagnostic.CA1494.severity = none
+dotnet_diagnostic.CA1495.severity = none
+dotnet_diagnostic.CA1496.severity = none
+dotnet_diagnostic.CA1497.severity = none
+dotnet_diagnostic.CA1498.severity = none
+dotnet_diagnostic.CA1499.severity = none
+dotnet_diagnostic.CA1500.severity = none

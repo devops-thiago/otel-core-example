@@ -1,0 +1,43 @@
+# Dockerfile for running tests
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS test
+WORKDIR /src
+
+# Copy project files
+COPY *.sln ./
+COPY *.csproj ./
+COPY UserApi.Tests/*.csproj ./UserApi.Tests/
+COPY Directory.Build.props ./
+COPY global.json ./
+
+# Restore dependencies
+RUN dotnet restore
+
+# Copy source code
+COPY . .
+
+# Run tests with coverage
+RUN dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage --logger trx --logger "console;verbosity=normal"
+
+# List coverage files for debugging
+RUN find coverage -type f -name "*.xml" | head -10
+
+# Install report generator
+RUN dotnet tool install -g dotnet-reportgenerator-globaltool --version 5.2.0
+
+# Find and generate coverage report
+RUN COVERAGE_FILE=$(find coverage -name "coverage.cobertura.xml" | head -1) && \
+    if [ -n "$COVERAGE_FILE" ]; then \
+        ~/.dotnet/tools/reportgenerator -reports:"$COVERAGE_FILE" -targetdir:"coverage/report" -reporttypes:"Html;Cobertura;OpenCover"; \
+        echo "Coverage report generated successfully"; \
+    else \
+        echo "No coverage file found"; \
+        find coverage -type f | head -10; \
+    fi
+
+# Display coverage summary
+RUN COVERAGE_FILE=$(find coverage -name "coverage.cobertura.xml" | head -1) && \
+    if [ -n "$COVERAGE_FILE" ]; then \
+        grep -o 'line-rate="[^"]*"' "$COVERAGE_FILE" | head -1; \
+    else \
+        echo "No coverage file found for summary"; \
+    fi
