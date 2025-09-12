@@ -14,4 +14,15 @@
     <PackageReference Include="Serilog.Sinks.OpenTelemetry" Version="1.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="UserApi.Tests/**" />
+    <Content Remove="UserApi.Tests/**" />
+    <EmbeddedResource Remove="UserApi.Tests/**" />
+    <None Remove="UserApi.Tests/**" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes);UserApi.Tests/**</DefaultItemExcludes>
+  </PropertyGroup>
+
 </Project>
