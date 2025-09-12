@@ -8,40 +8,34 @@ using UserApi.Data;
 using UserApi.DTOs;
 using FluentAssertions;
 using AutoFixture;
+using UserApi.Tests;
 
 namespace UserApi.Tests.Controllers
 {
-    public class UserControllerIntegrationTests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
+    public class UserControllerIntegrationTests : IClassFixture<TestWebApplicationFactory>, IDisposable
     {
-        private readonly WebApplicationFactory<Program> _factory;
+        private readonly TestWebApplicationFactory _factory;
         private readonly HttpClient _client;
         private readonly IFixture _fixture;
         private readonly IServiceScope _scope;
         private readonly UserDbContext _context;
 
-        public UserControllerIntegrationTests(WebApplicationFactory<Program> factory)
+        public UserControllerIntegrationTests(TestWebApplicationFactory factory)
         {
-            _factory = factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureServices(services =>
-                {
-                    // Remove the existing DbContext registration
-                    var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<UserDbContext>));
-                    if (descriptor != null)
-                    {
-                        services.Remove(descriptor);
-                    }
-
-                    // Add InMemory database for testing
-                    services.AddDbContext<UserDbContext>(options =>
-                    {
-                        options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid().ToString());
-                    });
-                });
-            });
-
+            _factory = factory;
             _client = _factory.CreateClient();
             _fixture = new Fixture();
+            
+            // Configure AutoFixture to generate valid email addresses
+            _fixture.Customize<CreateUserDto>(c => c
+                .With(x => x.Email, _fixture.Create<string>() + "@example.com")
+                .With(x => x.FirstName, _fixture.Create<string>().Substring(0, Math.Min(10, _fixture.Create<string>().Length)))
+                .With(x => x.LastName, _fixture.Create<string>().Substring(0, Math.Min(10, _fixture.Create<string>().Length))));
+                
+            _fixture.Customize<UpdateUserDto>(c => c
+                .With(x => x.Email, _fixture.Create<string>() + "@example.com")
+                .With(x => x.FirstName, _fixture.Create<string>().Substring(0, Math.Min(10, _fixture.Create<string>().Length)))
+                .With(x => x.LastName, _fixture.Create<string>().Substring(0, Math.Min(10, _fixture.Create<string>().Length))));
 
             _scope = _factory.Services.CreateScope();
             _context = _scope.ServiceProvider.GetRequiredService<UserDbContext>();

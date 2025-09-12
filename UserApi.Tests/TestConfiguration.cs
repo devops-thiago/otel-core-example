@@ -24,6 +24,12 @@ namespace UserApi.Tests
                 {
                     options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid().ToString());
                 });
+
+                // Ensure database is created and seeded
+                var serviceProvider = services.BuildServiceProvider();
+                using var scope = serviceProvider.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+                context.Database.EnsureCreated();
             });
         }
     }
