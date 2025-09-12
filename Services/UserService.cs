@@ -1,3 +1,5 @@
+
+
 using Microsoft.EntityFrameworkCore;
 using UserApi.Data;
 using UserApi.DTOs;
@@ -103,16 +105,24 @@ namespace UserApi.Services
 
             // Update only provided fields
             if (!string.IsNullOrEmpty(updateUserDto.FirstName))
+            {
                 user.FirstName = updateUserDto.FirstName;
+            }
             
             if (!string.IsNullOrEmpty(updateUserDto.LastName))
+            {
                 user.LastName = updateUserDto.LastName;
+            }
             
             if (!string.IsNullOrEmpty(updateUserDto.Email))
+            {
                 user.Email = updateUserDto.Email;
+            }
             
             if (updateUserDto.PhoneNumber != null)
+            {
                 user.PhoneNumber = updateUserDto.PhoneNumber;
+            }
 
             user.UpdatedAt = DateTime.UtcNow;
 

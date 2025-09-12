@@ -44,7 +44,7 @@ namespace UserApi.Tests.Services
 
             // Assert
             result.Should().HaveCount(3);
-            result.Should().AllSatisfy(user => 
+            result.Should().AllSatisfy(user =>
             {
                 user.Id.Should().BeGreaterThan(0);
                 user.FirstName.Should().NotBeNullOrEmpty();

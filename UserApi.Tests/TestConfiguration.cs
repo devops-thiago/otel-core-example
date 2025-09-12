@@ -15,7 +15,9 @@ namespace UserApi.Tests
                 // Remove the existing DbContext registration
                 var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<UserDbContext>));
                 if (descriptor != null)
+                {
                     services.Remove(descriptor);
+                }
 
                 // Add InMemory database for testing
                 services.AddDbContext<UserDbContext>(options =>

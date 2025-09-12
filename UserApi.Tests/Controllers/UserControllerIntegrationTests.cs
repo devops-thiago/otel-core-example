@@ -28,7 +28,9 @@ namespace UserApi.Tests.Controllers
                     // Remove the existing DbContext registration
                     var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<UserDbContext>));
                     if (descriptor != null)
+                    {
                         services.Remove(descriptor);
+                    }
 
                     // Add InMemory database for testing
                     services.AddDbContext<UserDbContext>(options =>
@@ -40,7 +42,7 @@ namespace UserApi.Tests.Controllers
 
             _client = _factory.CreateClient();
             _fixture = new Fixture();
-            
+
             _scope = _factory.Services.CreateScope();
             _context = _scope.ServiceProvider.GetRequiredService<UserDbContext>();
         }
