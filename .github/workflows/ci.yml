@@ -34,19 +34,19 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore UserApi.sln
 
     - name: Build solution
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build UserApi.sln --no-restore --configuration Release
 
     - name: Run code formatting check
-      run: dotnet format --verify-no-changes --verbosity diagnostic
+      run: dotnet format UserApi.sln --verify-no-changes --verbosity diagnostic
 
     - name: Run linting
-      run: dotnet build --verbosity normal --configuration Release /p:TreatWarningsAsErrors=true
+      run: dotnet build UserApi.sln --verbosity normal --configuration Release /p:TreatWarningsAsErrors=true
 
     - name: Run tests
-      run: dotnet test --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+      run: dotnet test UserApi.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
     - name: Generate coverage report
       run: |
@@ -101,13 +101,13 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore UserApi.sln
 
     - name: Build solution
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build UserApi.sln --no-restore --configuration Release
 
     - name: Run tests with coverage
-      run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory ./coverage
+      run: dotnet test UserApi.sln --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory ./coverage
 
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
