@@ -30,18 +30,18 @@ namespace UserApi.Services
         public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
         {
             _logger.LogInformation("Getting all users");
-            
+
             var users = await _context.Users.ToListAsync();
-            
+
             return users.Select(MapToResponseDto);
         }
 
         public async Task<UserResponseDto?> GetUserByIdAsync(int id)
         {
             _logger.LogInformation("Getting user with ID: {UserId}", id);
-            
+
             var user = await _context.Users.FindAsync(id);
-            
+
             if (user == null)
             {
                 _logger.LogWarning("User with ID {UserId} not found", id);
@@ -54,7 +54,7 @@ namespace UserApi.Services
         public async Task<UserResponseDto> CreateUserAsync(CreateUserDto createUserDto)
         {
             _logger.LogInformation("Creating new user with email: {Email}", createUserDto.Email);
-            
+
             // Check if email already exists
             var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == createUserDto.Email);
             if (existingUser != null)
@@ -77,14 +77,14 @@ namespace UserApi.Services
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("User created successfully with ID: {UserId}", user.Id);
-            
+
             return MapToResponseDto(user);
         }
 
         public async Task<UserResponseDto?> UpdateUserAsync(int id, UpdateUserDto updateUserDto)
         {
             _logger.LogInformation("Updating user with ID: {UserId}", id);
-            
+
             var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
@@ -108,17 +108,17 @@ namespace UserApi.Services
             {
                 user.FirstName = updateUserDto.FirstName;
             }
-            
+
             if (!string.IsNullOrEmpty(updateUserDto.LastName))
             {
                 user.LastName = updateUserDto.LastName;
             }
-            
+
             if (!string.IsNullOrEmpty(updateUserDto.Email))
             {
                 user.Email = updateUserDto.Email;
             }
-            
+
             if (updateUserDto.PhoneNumber != null)
             {
                 user.PhoneNumber = updateUserDto.PhoneNumber;
@@ -129,14 +129,14 @@ namespace UserApi.Services
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("User with ID {UserId} updated successfully", id);
-            
+
             return MapToResponseDto(user);
         }
 
         public async Task<bool> DeleteUserAsync(int id)
         {
             _logger.LogInformation("Deleting user with ID: {UserId}", id);
-            
+
             var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
@@ -148,7 +148,7 @@ namespace UserApi.Services
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("User with ID {UserId} deleted successfully", id);
-            
+
             return true;
         }
 
