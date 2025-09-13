@@ -133,14 +133,18 @@ builder.Services.AddLogging(logging =>
     logging.AddSerilog();
 });
 
-// Add CORS
+// Add CORS with secure configuration
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("SecureCors", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
+                           ?? new[] { "http://localhost:3000", "https://localhost:3001" };
+        
+        policy.WithOrigins(allowedOrigins)
+              .WithMethods("GET", "POST", "PUT", "DELETE")
+              .WithHeaders("Content-Type", "Authorization", "X-Requested-With")
+              .AllowCredentials();
     });
 });
 
@@ -158,14 +162,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
+app.UseCors("SecureCors");
 
 app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Map health checks endpoints
+// Map health checks endpoints with limited information exposure
 app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
     ResponseWriter = async (context, report) =>
@@ -177,11 +181,10 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
             checks = report.Entries.Select(entry => new
             {
                 name = entry.Key,
-                status = entry.Value.Status.ToString(),
-                description = entry.Value.Description,
-                duration = entry.Value.Duration.TotalMilliseconds
-            }),
-            totalDuration = report.TotalDuration.TotalMilliseconds
+                status = entry.Value.Status.ToString()
+                // Removed description and duration to prevent information disclosure
+            })
+            // Removed totalDuration to prevent timing attack information
         });
         await context.Response.WriteAsync(result);
     }
@@ -195,14 +198,13 @@ app.MapGet("/metrics", async (HttpContext context) =>
     await context.Response.WriteAsync("# Metrics are exported via OpenTelemetry to Alloy\n");
 });
 
-// Additional endpoints for observability
+// Additional endpoints for observability with limited information exposure
 app.MapGet("/info", () => new
 {
     service = serviceName,
     version = serviceVersion,
-    environment = environment,
-    timestamp = DateTime.UtcNow,
-    uptime = DateTime.UtcNow - System.Diagnostics.Process.GetCurrentProcess().StartTime.ToUniversalTime()
+    status = "running"
+    // Removed environment, timestamp, and uptime to prevent information disclosure
 }).WithName("Info").WithTags("Observability");
 
 // Seed the database

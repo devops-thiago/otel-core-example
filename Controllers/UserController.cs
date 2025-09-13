@@ -78,7 +78,8 @@ namespace UserApi.Controllers
         {
             using var activity = ActivitySource.StartActivity("CreateUser");
             activity?.SetTag("operation", "create_user");
-            activity?.SetTag("user.email", createUserDto.Email);
+            // Avoid logging PII in traces - use a sanitized version or omit entirely
+            activity?.SetTag("user.email.domain", GetEmailDomain(createUserDto.Email));
 
             try
             {
@@ -93,13 +94,15 @@ namespace UserApi.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Invalid operation while creating user with email {Email}", createUserDto.Email);
+                var sanitizedEmail = SanitizeEmailForLogging(createUserDto.Email);
+                _logger.LogWarning(ex, "Invalid operation while creating user with email {Email}", sanitizedEmail);
                 activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                 return Conflict(ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while creating user with email {Email}", createUserDto.Email);
+                var sanitizedEmail = SanitizeEmailForLogging(createUserDto.Email);
+                _logger.LogError(ex, "Error occurred while creating user with email {Email}", sanitizedEmail);
                 activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                 return StatusCode(500, "An error occurred while creating the user");
             }
@@ -173,6 +176,47 @@ namespace UserApi.Controllers
                 activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                 return StatusCode(500, "An error occurred while deleting the user");
             }
+        }
+
+        private static string SanitizeEmailForLogging(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return "[empty]";
+            }
+
+            var atIndex = email.IndexOf('@');
+            if (atIndex < 0)
+            {
+                return "[invalid]";
+            }
+
+            // Keep first character and domain, mask the rest
+            var localPart = email.Substring(0, atIndex);
+            var domain = email.Substring(atIndex);
+            
+            if (localPart.Length <= 1)
+            {
+                return $"*{domain}";
+            }
+            
+            return $"{localPart[0]}***{domain}";
+        }
+
+        private static string GetEmailDomain(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return "[empty]";
+            }
+
+            var atIndex = email.IndexOf('@');
+            if (atIndex < 0)
+            {
+                return "[invalid]";
+            }
+
+            return email.Substring(atIndex + 1);
         }
     }
 }
