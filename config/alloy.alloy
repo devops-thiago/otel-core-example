@@ -1,7 +1,7 @@
 // Alloy configuration for collecting metrics, traces and logs
 // This config sets up OTLP receivers and forwards to Tempo, Mimir, and Loki
 
-// OTLP receiver for traces
+// OTLP receiver for traces, metrics, and logs
 otelcol.receiver.otlp "default" {
   grpc {
     endpoint = "0.0.0.0:4320"
