@@ -59,7 +59,7 @@ jobs:
         cp coverage/report/Cobertura.xml coverage/coverage.cobertura.xml
 
     - name: Upload coverage reports
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7
       with:
         file: ./coverage/coverage.cobertura.xml
         flags: unittests
