@@ -91,8 +91,8 @@ Using the published Docker image:
 docker run -p 8080:8080 thiagosg/otel-crud-api-net-core:latest
 
 # Or with basic Alloy for observability
-docker run -d --name alloy -p 4317:4317 -p 4318:4318 -p 12345:12345 grafana/alloy:latest
-docker run -p 8080:8080 --link alloy -e OpenTelemetry__OtlpEndpoint=http://alloy:4317 thiagosg/otel-crud-api-net-core:latest
+docker run -d --name alloy -p 4320:4320 -p 4321:4321 -p 12345:12345 grafana/alloy:latest
+docker run -p 8080:8080 --link alloy -e OpenTelemetry__OtlpEndpoint=http://alloy:4320 thiagosg/otel-crud-api-net-core:latest
 ```
 
 ### Manual Setup
@@ -103,7 +103,7 @@ docker run -p 8080:8080 --link alloy -e OpenTelemetry__OtlpEndpoint=http://alloy
 
 2. **Start Alloy**:
 ```bash
-docker run -d --name alloy -p 4317:4317 -p 4318:4318 -p 12345:12345 \
+docker run -d --name alloy -p 4320:4320 -p 4321:4321 -p 12345:12345 \
   -v $(pwd)/alloy.config:/.config/alloy/config.alloy \
   grafana/alloy:latest run --server.http.listen-addr=0.0.0.0:12345 \
   --storage.path=/var/lib/alloy/data /.config/alloy/config.alloy
@@ -216,13 +216,13 @@ This project implements the **LGTM Stack** (Loki, Grafana, Tempo, Mimir) for com
 
 ### Environment Variables
 
-- `OpenTelemetry__OtlpEndpoint`: Alloy endpoint (default: http://localhost:4317)
+- `OpenTelemetry__OtlpEndpoint`: Alloy endpoint (default: http://localhost:4320)
 - `ASPNETCORE_ENVIRONMENT`: Environment (Development/Production)
 
 ### Alloy Configuration
 
 The `alloy.config` file configures Alloy to:
-- Receive OTLP data on ports 4317 (gRPC) and 4318 (HTTP)
+- Receive OTLP data on ports 4320 (gRPC) and 4321 (HTTP)
 - Process and batch telemetry data
 - Export to various backends (configurable)
 
@@ -475,7 +475,7 @@ UserCreatedCounter.Add(1, new KeyValuePair<string, object?>("user.email", email)
 
 1. **Alloy not receiving data**: Check if Alloy is running and accessible on the configured ports
 2. **Database issues**: The in-memory database resets on restart
-3. **Port conflicts**: Ensure ports 8080, 4317, 4318, and 12345 are available
+3. **Port conflicts**: Ensure ports 8080, 4320, 4321, and 12345 are available
 
 ## License
 
