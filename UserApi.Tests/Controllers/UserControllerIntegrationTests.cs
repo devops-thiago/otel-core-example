@@ -25,20 +25,20 @@ namespace UserApi.Tests.Controllers
             _factory = factory;
             _client = _factory.CreateClient();
             _fixture = new Fixture();
-            
+
             // Configure AutoFixture to generate valid data
             _fixture.Customize<CreateUserDto>(c => c
                 .With(x => x.Email, () => _fixture.Create<string>() + "@example.com")
                 .With(x => x.FirstName, () => "Test" + _fixture.Create<string>().Substring(0, 5))
                 .With(x => x.LastName, () => "User" + _fixture.Create<string>().Substring(0, 5))
                 .With(x => x.PhoneNumber, () => "+1234567890"));
-                
+
             _fixture.Customize<UpdateUserDto>(c => c
                 .With(x => x.Email, () => _fixture.Create<string>() + "@example.com")
                 .With(x => x.FirstName, () => "Updated" + _fixture.Create<string>().Substring(0, 5))
                 .With(x => x.LastName, () => "User" + _fixture.Create<string>().Substring(0, 5))
                 .With(x => x.PhoneNumber, () => "+9876543210"));
-                
+
             _fixture.Customize<User>(c => c
                 .With(x => x.Email, () => _fixture.Create<string>() + "@example.com")
                 .With(x => x.FirstName, () => "Test" + _fixture.Create<string>().Substring(0, 5))
