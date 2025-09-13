@@ -13,13 +13,20 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
+// Configure Serilog with enhanced observability
+var serviceName = builder.Configuration["OpenTelemetry:ServiceName"] ?? "user-api";
+var serviceVersion = builder.Configuration["OpenTelemetry:ServiceVersion"] ?? "1.0.0";
+var environment = builder.Environment.EnvironmentName;
+
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
-    .Enrich.WithProperty("ServiceName", "UserApi")
-    .Enrich.WithProperty("ServiceVersion", "1.0.0")
-    .WriteTo.Console()
+    .Enrich.WithProperty("ServiceName", serviceName)
+    .Enrich.WithProperty("ServiceVersion", serviceVersion)
+    .Enrich.WithProperty("Environment", environment)
+    .Enrich.WithMachineName()
+    .Enrich.WithThreadId()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] [{SourceContext}] {Message:lj} {Properties:j}{NewLine}{Exception}")
     .WriteTo.OpenTelemetry(options =>
     {
         options.Endpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"] ?? "http://localhost:4317";
@@ -60,14 +67,24 @@ builder.Services.AddDbContext<UserDbContext>(options =>
 // Add services
 builder.Services.AddScoped<IUserService, UserService>();
 
-// Configure OpenTelemetry
+// Add health checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<UserDbContext>("database");
+
+// Configure OpenTelemetry with enhanced resource attributes
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource
-        .AddService(serviceName: "UserApi", serviceVersion: "1.0.0")
+        .AddService(serviceName: serviceName, serviceVersion: serviceVersion)
         .AddAttributes(new Dictionary<string, object>
         {
-            ["deployment.environment"] = builder.Environment.EnvironmentName,
-            ["service.instance.id"] = Environment.MachineName
+            ["deployment.environment"] = environment,
+            ["service.instance.id"] = Environment.MachineName,
+            ["service.namespace"] = "otel-core-example",
+            ["host.name"] = Environment.MachineName,
+            ["os.type"] = Environment.OSVersion.Platform.ToString(),
+            ["runtime.name"] = ".NET",
+            ["runtime.version"] = Environment.Version.ToString(),
+            ["container.id"] = Environment.GetEnvironmentVariable("HOSTNAME") ?? "localhost"
         }))
     .WithTracing(tracing =>
     {
@@ -148,10 +165,45 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Health check endpoint
-app.MapGet("/health", () => "Healthy")
-    .WithName("HealthCheck")
-    .WithTags("Health");
+// Map health checks endpoints
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var result = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(entry => new
+            {
+                name = entry.Key,
+                status = entry.Value.Status.ToString(),
+                description = entry.Value.Description,
+                duration = entry.Value.Duration.TotalMilliseconds
+            }),
+            totalDuration = report.TotalDuration.TotalMilliseconds
+        });
+        await context.Response.WriteAsync(result);
+    }
+});
+
+// Metrics endpoint for Prometheus scraping (if available)
+app.MapGet("/metrics", async (HttpContext context) =>
+{
+    context.Response.ContentType = "text/plain; version=0.0.4; charset=utf-8";
+    await context.Response.WriteAsync("# OpenTelemetry metrics endpoint\n");
+    await context.Response.WriteAsync("# Metrics are exported via OpenTelemetry to Alloy\n");
+});
+
+// Additional endpoints for observability
+app.MapGet("/info", () => new
+{
+    service = serviceName,
+    version = serviceVersion,
+    environment = environment,
+    timestamp = DateTime.UtcNow,
+    uptime = DateTime.UtcNow - System.Diagnostics.Process.GetCurrentProcess().StartTime.ToUniversalTime()
+}).WithName("Info").WithTags("Observability");
 
 // Seed the database
 using (var scope = app.Services.CreateScope())
