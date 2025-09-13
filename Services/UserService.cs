@@ -53,13 +53,14 @@ namespace UserApi.Services
 
         public async Task<UserResponseDto> CreateUserAsync(CreateUserDto createUserDto)
         {
-            _logger.LogInformation("Creating new user with email: {Email}", createUserDto.Email);
+            var sanitizedEmail = SanitizeEmail(createUserDto.Email);
+            _logger.LogInformation("Creating new user with email: {Email}", sanitizedEmail);
 
             // Check if email already exists
             var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == createUserDto.Email);
             if (existingUser != null)
             {
-                _logger.LogWarning("User with email {Email} already exists", createUserDto.Email);
+                _logger.LogWarning("User with email {Email} already exists", sanitizedEmail);
                 throw new InvalidOperationException("A user with this email already exists.");
             }
 
@@ -98,7 +99,8 @@ namespace UserApi.Services
                 var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == updateUserDto.Email);
                 if (existingUser != null)
                 {
-                    _logger.LogWarning("User with email {Email} already exists", updateUserDto.Email);
+                    var sanitizedEmail = SanitizeEmail(updateUserDto.Email);
+                    _logger.LogWarning("User with email {Email} already exists", sanitizedEmail);
                     throw new InvalidOperationException("A user with this email already exists.");
                 }
             }
@@ -164,6 +166,31 @@ namespace UserApi.Services
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt
             };
+        }
+
+        private static string SanitizeEmail(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return "[empty]";
+            }
+
+            var atIndex = email.IndexOf('@');
+            if (atIndex < 0)
+            {
+                return "[invalid]";
+            }
+
+            // Keep first character and domain, mask the rest
+            var localPart = email.Substring(0, atIndex);
+            var domain = email.Substring(atIndex);
+
+            if (localPart.Length <= 1)
+            {
+                return $"*{domain}";
+            }
+
+            return $"{localPart[0]}***{domain}";
         }
     }
 }

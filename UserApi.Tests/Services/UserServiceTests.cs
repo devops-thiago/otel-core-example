@@ -269,6 +269,178 @@ namespace UserApi.Tests.Services
             result.Email.Should().Be(createUserDto.Email);
         }
 
+        [Fact]
+        public async Task UpdateUserAsync_WithEmptyEmail_ShouldUpdateWithoutEmailChange()
+        {
+            // Arrange
+            var user = _fixture.Create<User>();
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var updateUserDto = new UpdateUserDto
+            {
+                FirstName = "UpdatedFirstName",
+                Email = "" // Empty string should not update email
+            };
+
+            // Act
+            var result = await _userService.UpdateUserAsync(user.Id, updateUserDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.FirstName.Should().Be(updateUserDto.FirstName);
+            result.Email.Should().Be(user.Email); // Should remain unchanged
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WithNullPhoneNumber_ShouldKeepExistingPhoneNumber()
+        {
+            // Arrange
+            var user = _fixture.Create<User>();
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var originalPhoneNumber = user.PhoneNumber;
+
+            var updateUserDto = new UpdateUserDto
+            {
+                PhoneNumber = null
+            };
+
+            // Act
+            var result = await _userService.UpdateUserAsync(user.Id, updateUserDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.PhoneNumber.Should().Be(originalPhoneNumber); // Should remain unchanged
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WithSameEmail_ShouldNotThrowException()
+        {
+            // Arrange
+            var user = _fixture.Create<User>();
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var updateUserDto = new UpdateUserDto
+            {
+                Email = user.Email // Same email should be allowed
+            };
+
+            // Act
+            var result = await _userService.UpdateUserAsync(user.Id, updateUserDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Email.Should().Be(user.Email);
+        }
+
+        [Fact]
+        public async Task GetAllUsersAsync_WithEmptyDatabase_ShouldReturnEmptyList()
+        {
+            // Act
+            var result = await _userService.GetAllUsersAsync();
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData("")]
+        public async Task UpdateUserAsync_WithEmptyFirstName_ShouldNotUpdateFirstName(string firstName)
+        {
+            // Arrange
+            var user = _fixture.Create<User>();
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var updateUserDto = new UpdateUserDto
+            {
+                FirstName = firstName,
+                LastName = "UpdatedLastName"
+            };
+
+            // Act
+            var result = await _userService.UpdateUserAsync(user.Id, updateUserDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.FirstName.Should().Be(user.FirstName); // Should remain unchanged
+            result.LastName.Should().Be(updateUserDto.LastName); // Should be updated
+        }
+
+        [Theory]
+        [InlineData("")]
+        public async Task UpdateUserAsync_WithEmptyLastName_ShouldNotUpdateLastName(string lastName)
+        {
+            // Arrange
+            var user = _fixture.Create<User>();
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var updateUserDto = new UpdateUserDto
+            {
+                FirstName = "UpdatedFirstName",
+                LastName = lastName
+            };
+
+            // Act
+            var result = await _userService.UpdateUserAsync(user.Id, updateUserDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.FirstName.Should().Be(updateUserDto.FirstName); // Should be updated
+            result.LastName.Should().Be(user.LastName); // Should remain unchanged
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WithNullFirstName_ShouldNotUpdateFirstName()
+        {
+            // Arrange
+            var user = _fixture.Create<User>();
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var updateUserDto = new UpdateUserDto
+            {
+                FirstName = null,
+                LastName = "UpdatedLastName"
+            };
+
+            // Act
+            var result = await _userService.UpdateUserAsync(user.Id, updateUserDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.FirstName.Should().Be(user.FirstName); // Should remain unchanged
+            result.LastName.Should().Be(updateUserDto.LastName); // Should be updated
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WithNullLastName_ShouldNotUpdateLastName()
+        {
+            // Arrange
+            var user = _fixture.Create<User>();
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var updateUserDto = new UpdateUserDto
+            {
+                FirstName = "UpdatedFirstName",
+                LastName = null
+            };
+
+            // Act
+            var result = await _userService.UpdateUserAsync(user.Id, updateUserDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.FirstName.Should().Be(updateUserDto.FirstName); // Should be updated
+            result.LastName.Should().Be(user.LastName); // Should remain unchanged
+        }
+
         public void Dispose()
         {
             _context.Dispose();

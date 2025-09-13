@@ -277,6 +277,160 @@ namespace UserApi.Tests.Controllers
             content.Should().Contain("Healthy");
         }
 
+        [Fact]
+        public async Task InfoEndpoint_ShouldReturnServiceInfo()
+        {
+            // Act
+            var response = await _client.GetAsync("/info");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("service");
+            content.Should().Contain("version");
+            content.Should().Contain("status");
+        }
+
+        [Fact]
+        public async Task CreateUser_WithMissingRequiredFields_ShouldReturnBadRequest()
+        {
+            // Arrange
+            var createUserDto = new CreateUserDto
+            {
+                // Missing required fields - using empty strings instead of null
+                FirstName = "",
+                LastName = "",
+                Email = ""
+            };
+            var json = JsonSerializer.Serialize(createUserDto);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await _client.PostAsync("/api/user", content);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
+        [Fact]
+        public async Task UpdateUser_WithDuplicateEmail_ShouldReturnConflict()
+        {
+            // Arrange
+            var user1 = _fixture.Create<User>();
+            var user2 = _fixture.Create<User>();
+            _context.Users.AddRange(user1, user2);
+            await _context.SaveChangesAsync();
+
+            var updateUserDto = _fixture.Build<UpdateUserDto>()
+                .With(x => x.Email, user2.Email)
+                .Create();
+            var json = JsonSerializer.Serialize(updateUserDto);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await _client.PutAsync($"/api/user/{user1.Id}", content);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        }
+
+        [Fact]
+        public async Task GetUsers_WithMultipleUsers_ShouldReturnAllUsers()
+        {
+            // Arrange
+            var users = _fixture.CreateMany<User>(5).ToList();
+            _context.Users.AddRange(users);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var response = await _client.GetAsync("/api/user");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<List<UserResponseDto>>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            result.Should().NotBeNull();
+            result.Should().HaveCount(5);
+        }
+
+        [Fact]
+        public async Task UpdateUser_WithPartialData_ShouldUpdateOnlyProvidedFields()
+        {
+            // Arrange
+            var user = _fixture.Create<User>();
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var updateUserDto = new UpdateUserDto
+            {
+                FirstName = "UpdatedFirstName"
+                // Other fields are null/not provided
+            };
+            var json = JsonSerializer.Serialize(updateUserDto);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await _client.PutAsync($"/api/user/{user.Id}", content);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<UserResponseDto>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            result.Should().NotBeNull();
+            result!.FirstName.Should().Be("UpdatedFirstName");
+            result.LastName.Should().Be(user.LastName); // Should remain unchanged
+            result.Email.Should().Be(user.Email); // Should remain unchanged
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)]
+        public async Task GetUser_WithInvalidIdFormat_ShouldReturnNotFound(int invalidId)
+        {
+            // Act
+            var response = await _client.GetAsync($"/api/user/{invalidId}");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)]
+        public async Task UpdateUser_WithInvalidIdFormat_ShouldReturnNotFound(int invalidId)
+        {
+            // Arrange
+            var updateUserDto = _fixture.Create<UpdateUserDto>();
+            var json = JsonSerializer.Serialize(updateUserDto);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await _client.PutAsync($"/api/user/{invalidId}", content);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)]
+        public async Task DeleteUser_WithInvalidIdFormat_ShouldReturnNotFound(int invalidId)
+        {
+            // Act
+            var response = await _client.DeleteAsync($"/api/user/{invalidId}");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
         public void Dispose()
         {
             // Clean up database
