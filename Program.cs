@@ -7,6 +7,9 @@ using OpenTelemetry.Logs;
 using Serilog;
 using UserApi.Data;
 using UserApi.Services;
+using UserApi.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,13 +29,24 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+
 // Add services to the container
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
+builder.Services.AddControllers(options =>
+{
+    // Remove the default JSON formatter that has PipeWriter issues in .NET 9
+    var defaultFormatter = options.OutputFormatters.OfType<SystemTextJsonOutputFormatter>().FirstOrDefault();
+    if (defaultFormatter != null)
     {
-        // Fix for .NET 9 PipeWriter compatibility issue - disable async streaming
-        options.JsonSerializerOptions.DefaultBufferSize = 1;
-    });
+        options.OutputFormatters.Remove(defaultFormatter);
+    }
+
+    // Add our custom JSON formatter that avoids PipeWriter
+    options.OutputFormatters.Add(new CompatibleSystemTextJsonOutputFormatter(new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false
+    }));
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

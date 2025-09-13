@@ -2,12 +2,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading;
 using UserApi.Data;
 
 namespace UserApi.Tests
 {
     public class TestWebApplicationFactory : WebApplicationFactory<Program>
     {
+        private static int _databaseCounter = 0;
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.ConfigureServices(services =>
@@ -19,23 +22,16 @@ namespace UserApi.Tests
                     services.Remove(descriptor);
                 }
 
+                // Create a unique database name for each test run
+                var databaseName = $"TestDb_{Interlocked.Increment(ref _databaseCounter)}_{Guid.NewGuid()}";
+
                 // Add InMemory database for testing
                 services.AddDbContext<UserDbContext>(options =>
                 {
-                    options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid().ToString());
+                    options.UseInMemoryDatabase(databaseName);
                 });
 
-                // Configure JSON options for testing to avoid PipeWriter issues
-                services.ConfigureHttpJsonOptions(options =>
-                {
-                    options.SerializerOptions.DefaultBufferSize = 1;
-                });
-
-                // Ensure database is created and seeded
-                var serviceProvider = services.BuildServiceProvider();
-                using var scope = serviceProvider.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
-                context.Database.EnsureCreated();
+                // Using custom JSON formatter to fix .NET 9 PipeWriter compatibility issues
             });
         }
     }

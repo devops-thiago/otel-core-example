@@ -12,7 +12,7 @@ using UserApi.Tests;
 
 namespace UserApi.Tests.Controllers
 {
-    public class UserControllerIntegrationTests : IClassFixture<TestWebApplicationFactory>, IDisposable
+    public class UserControllerIntegrationTests : IDisposable
     {
         private readonly TestWebApplicationFactory _factory;
         private readonly HttpClient _client;
@@ -20,9 +20,9 @@ namespace UserApi.Tests.Controllers
         private readonly IServiceScope _scope;
         private readonly UserDbContext _context;
 
-        public UserControllerIntegrationTests(TestWebApplicationFactory factory)
+        public UserControllerIntegrationTests()
         {
-            _factory = factory;
+            _factory = new TestWebApplicationFactory();
             _client = _factory.CreateClient();
             _fixture = new Fixture();
 
@@ -51,6 +51,7 @@ namespace UserApi.Tests.Controllers
             _scope = _factory.Services.CreateScope();
             _context = _scope.ServiceProvider.GetRequiredService<UserDbContext>();
         }
+
 
         [Fact]
         public async Task GetUsers_ShouldReturnOkWithUsers()
@@ -190,6 +191,7 @@ namespace UserApi.Tests.Controllers
             var updateUserDto = _fixture.Build<UpdateUserDto>()
                 .With(x => x.FirstName, "UpdatedFirstName")
                 .With(x => x.LastName, "UpdatedLastName")
+                .With(x => x.Email, "updated@example.com")
                 .Create();
             var json = JsonSerializer.Serialize(updateUserDto);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -209,6 +211,7 @@ namespace UserApi.Tests.Controllers
             result!.Id.Should().Be(user.Id);
             result.FirstName.Should().Be(updateUserDto.FirstName);
             result.LastName.Should().Be(updateUserDto.LastName);
+            result.Email.Should().Be(updateUserDto.Email);
         }
 
         [Fact]
@@ -241,7 +244,8 @@ namespace UserApi.Tests.Controllers
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-            // Verify user was deleted
+            // Verify user was deleted - refresh context to see changes from API
+            _context.ChangeTracker.Clear();
             var deletedUser = await _context.Users.FindAsync(user.Id);
             deletedUser.Should().BeNull();
         }
@@ -262,6 +266,8 @@ namespace UserApi.Tests.Controllers
         [Fact]
         public async Task HealthCheck_ShouldReturnOk()
         {
+            // Arrange
+
             // Act
             var response = await _client.GetAsync("/health");
 
@@ -278,6 +284,7 @@ namespace UserApi.Tests.Controllers
             _context?.Dispose();
             _scope?.Dispose();
             _client?.Dispose();
+            _factory?.Dispose();
         }
     }
 }

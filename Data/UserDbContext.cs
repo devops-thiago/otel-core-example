@@ -24,29 +24,32 @@ namespace UserApi.Data
                 entity.Property(e => e.LastName).IsRequired();
             });
 
-            // Seed some initial data
-            modelBuilder.Entity<User>().HasData(
-                new User
-                {
-                    Id = 1,
-                    FirstName = "John",
-                    LastName = "Doe",
-                    Email = "john.doe@example.com",
-                    PhoneNumber = "+1234567890",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                },
-                new User
-                {
-                    Id = 2,
-                    FirstName = "Jane",
-                    LastName = "Smith",
-                    Email = "jane.smith@example.com",
-                    PhoneNumber = "+0987654321",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                }
-            );
+            // Seed some initial data (only for production database, not test databases)
+            if (Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
+            {
+                modelBuilder.Entity<User>().HasData(
+                    new User
+                    {
+                        Id = 1,
+                        FirstName = "John",
+                        LastName = "Doe",
+                        Email = "john.doe@example.com",
+                        PhoneNumber = "+1234567890",
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    },
+                    new User
+                    {
+                        Id = 2,
+                        FirstName = "Jane",
+                        LastName = "Smith",
+                        Email = "jane.smith@example.com",
+                        PhoneNumber = "+0987654321",
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    }
+                );
+            }
         }
     }
 }
