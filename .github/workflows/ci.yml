@@ -61,7 +61,9 @@ jobs:
         file: ./coverage/coverage.cobertura.xml
         flags: unittests
         name: codecov-umbrella
-        fail_ci_if_error: true
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+      continue-on-error: true  # Allow CI to continue even if Codecov fails
 
     - name: Check coverage threshold
       run: |
