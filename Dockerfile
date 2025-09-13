@@ -7,10 +7,20 @@ EXPOSE 8081
 # Use the official .NET 9 SDK image for building
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
+
+# Copy project files and Directory.Build.props first for better caching
+COPY ["Directory.Build.props", "."]
+COPY ["global.json", "."]
 COPY ["UserApi.csproj", "."]
+COPY ["UserApi.Tests/UserApi.Tests.csproj", "UserApi.Tests/"]
+
+# Restore dependencies
 RUN dotnet restore "./UserApi.csproj"
+
+# Copy source code
 COPY . .
-WORKDIR "/src/."
+
+# Build the project
 RUN dotnet build "UserApi.csproj" -c Release -o /app/build
 
 FROM build AS publish

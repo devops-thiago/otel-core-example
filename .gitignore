@@ -124,6 +124,10 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 
+# SonarCloud
+.sonarqube/
+.scannerwork/
+
 # nyc test coverage
 .nyc_output
 

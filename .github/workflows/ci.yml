@@ -13,7 +13,7 @@ env:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -126,7 +126,14 @@ jobs:
           /o:"devops-thiago" \
           /d:sonar.host.url="https://sonarcloud.io" \
           /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-          /d:sonar.cs.opencover.reportsPaths="coverage/report/OpenCover.xml"
+          /d:sonar.cs.opencover.reportsPaths="coverage/report/OpenCover.xml" \
+          /d:sonar.projectBaseDir="." \
+          /d:sonar.sources="." \
+          /d:sonar.exclusions="**/bin/**,**/obj/**,**/TestResults/**,**/coverage/**,**/UserApi.Tests/**,**/node_modules/**,**/*.min.js,**/*.min.css" \
+          /d:sonar.test.inclusions="**/UserApi.Tests/**/*.cs" \
+          /d:sonar.coverage.exclusions="**/UserApi.Tests/**,**/Program.cs,**/Startup.cs,**/Migrations/**" \
+          /d:sonar.projectName="UserApi" \
+          /d:sonar.projectVersion="1.0.0"
 
     - name: Build solution
       run: dotnet build UserApi.sln --no-restore --configuration Release

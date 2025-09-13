@@ -17,6 +17,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-326CE5?logo=opentelemetry)](https://opentelemetry.io/)
+[![Dependabot](https://img.shields.io/badge/Dependabot-Enabled-025E8C?logo=dependabot)](https://github.com/devops-thiago/otel-core-example/network/dependencies)
 
 A comprehensive .NET Core REST API example demonstrating user CRUD operations with OpenTelemetry integration and Alloy for observability.
 
@@ -259,11 +260,15 @@ dotnet format --verify-no-changes
 # Run linting
 dotnet build --verbosity normal --configuration Release /p:TreatWarningsAsErrors=true
 
-# Run SonarQube analysis
-dotnet sonarscanner begin /k:"userapi" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="your-token"
+# Run SonarCloud analysis locally (example)
+dotnet sonarscanner begin \
+  /k:"devops-thiago_otel-core-example" \
+  /o:"devops-thiago" \
+  /d:sonar.host.url="https://sonarcloud.io" \
+  /d:sonar.token="your-token"
 dotnet build
 dotnet test --collect:"XPlat Code Coverage"
-dotnet sonarscanner end /d:sonar.login="your-token"
+dotnet sonarscanner end /d:sonar.token="your-token"
 ```
 
 ### Project Structure
@@ -294,6 +299,39 @@ The project includes a comprehensive GitHub Actions workflow:
 3. **SonarQube Analysis**: Code quality and security analysis
 4. **Docker Build**: Container image creation and publishing
 5. **Deployment**: Automated deployment to staging
+
+### Dependency Management
+
+This project uses **Dependabot** for automated dependency updates:
+
+#### **Automated Updates**:
+- 🔄 **NuGet Packages**: Weekly updates every Monday at 9 AM EST
+- 🔄 **GitHub Actions**: Weekly updates every Monday at 10 AM EST
+- 🔄 **Docker Images**: Weekly updates every Tuesday at 9 AM EST
+
+#### **Intelligent Grouping**:
+- **OpenTelemetry**: All OpenTelemetry packages updated together
+- **Microsoft**: Microsoft packages grouped for consistency
+- **Testing**: Test-related packages updated as a group
+
+#### **Features**:
+- ✅ Automatic PR creation with detailed changelogs
+- ✅ Automatic reviewer assignment (@devops-thiago)
+- ✅ Proper labeling and commit message formatting
+- ✅ Limited concurrent PRs to avoid overwhelming
+- ✅ Security and compatibility checks via CI pipeline
+
+#### **Manual Dependency Checks**:
+```bash
+# Check for outdated packages
+dotnet list package --outdated
+
+# Check for vulnerable packages
+dotnet list package --vulnerable --include-transitive
+
+# Update specific package
+dotnet add package PackageName --version x.x.x
+```
 
 ### Adding Custom Metrics
 
