@@ -1,24 +1,28 @@
 # OpenTelemetry .NET Core User API
 
-[![Build Status](https://github.com/your-username/otel-core-example/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/your-username/otel-core-example/actions)
-[![Coverage](https://codecov.io/gh/your-username/otel-core-example/branch/main/graph/badge.svg)](https://codecov.io/gh/your-username/otel-core-example)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=userapi&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=userapi)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=userapi&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=userapi)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=userapi&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=userapi)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=userapi&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=userapi)
-[![Code Coverage](https://sonarcloud.io/api/project_badges/measure?project=userapi&metric=coverage)](https://sonarcloud.io/summary/new_code?id=userapi)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=userapi&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=userapi)
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=userapi&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=userapi)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=userapi&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=userapi)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=userapi&metric=bugs)](https://sonarcloud.io/summary/new_code?id=userapi)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=userapi&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=userapi)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=userapi&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=userapi)
+[![Build Status](https://github.com/devops-thiago/otel-core-example/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/devops-thiago/otel-core-example/actions)
+[![Coverage](https://codecov.io/gh/devops-thiago/otel-core-example/branch/main/graph/badge.svg)](https://codecov.io/gh/devops-thiago/otel-core-example)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![Code Coverage](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=coverage)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=bugs)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
+[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-326CE5?logo=opentelemetry)](https://opentelemetry.io/)
 
 A comprehensive .NET Core REST API example demonstrating user CRUD operations with OpenTelemetry integration and Alloy for observability.
 
 ## 📊 Project Status
 
-- ✅ **Build Status**: [![Build Status](https://github.com/your-username/otel-core-example/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/your-username/otel-core-example/actions)
+- ✅ **Build Status**: [![Build Status](https://github.com/devops-thiago/otel-core-example/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/devops-thiago/otel-core-example/actions)
 - ✅ **Code Coverage**: 80%+ (target achieved)
 - ✅ **Code Quality**: SonarQube analysis enabled
 - ✅ **Security**: Vulnerability scanning enabled
