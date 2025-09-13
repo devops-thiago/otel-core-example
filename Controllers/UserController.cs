@@ -194,12 +194,12 @@ namespace UserApi.Controllers
             // Keep first character and domain, mask the rest
             var localPart = email.Substring(0, atIndex);
             var domain = email.Substring(atIndex);
-            
+
             if (localPart.Length <= 1)
             {
                 return $"*{domain}";
             }
-            
+
             return $"{localPart[0]}***{domain}";
         }
 
