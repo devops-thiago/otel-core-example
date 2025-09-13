@@ -50,6 +50,19 @@ A comprehensive .NET Core REST API example demonstrating user CRUD operations wi
 
 ## Quick Start
 
+### Using Pre-built Docker Image
+
+The easiest way to run the application is using the pre-built Docker image:
+
+```bash
+# Pull and run the latest image
+docker run -p 8080:8080 thiagosg/otel-crud-api-net-core:latest
+
+# Or run with Alloy for observability
+docker run -d --name alloy -p 4317:4317 -p 4318:4318 -p 12345:12345 grafana/alloy:latest
+docker run -p 8080:8080 --link alloy -e OpenTelemetry__OtlpEndpoint=http://alloy:4317 thiagosg/otel-crud-api-net-core:latest
+```
+
 ### Using Docker Compose (Recommended)
 
 1. Clone the repository and navigate to the project directory

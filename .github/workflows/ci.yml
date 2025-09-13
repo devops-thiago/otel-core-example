@@ -181,6 +181,16 @@ jobs:
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/userapi:latest
           ${{ secrets.DOCKER_USERNAME }}/userapi:${{ github.sha }}
+          ${{ secrets.DOCKER_USERNAME }}/otel-crud-api-net-core:v${{ github.run_number }}
+        labels: |
+          org.opencontainers.image.title=OpenTelemetry .NET Core CRUD API
+          org.opencontainers.image.description=.NET Core REST API with OpenTelemetry integration and Alloy observability
+          org.opencontainers.image.url=https://github.com/devops-thiago/otel-core-example
+          org.opencontainers.image.source=https://github.com/devops-thiago/otel-core-example
+          org.opencontainers.image.version=v${{ github.run_number }}
+          org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.licenses=MIT
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
