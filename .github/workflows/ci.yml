@@ -132,7 +132,9 @@ jobs:
           /n:"UserApi" \
           /v:"1.0.0" \
           /d:sonar.host.url="https://sonarcloud.io" \
-          /d:sonar.token="$SONAR_TOKEN"
+          /d:sonar.token="$SONAR_TOKEN" \
+          /d:sonar.coverageReportPaths="coverage/report/Cobertura.xml" \
+          /d:sonar.dotnet.coverage.reportPaths="coverage/**/coverage.cobertura.xml"
 
     - name: Build solution
       run: dotnet build UserApi.sln --no-restore --configuration Release
@@ -143,7 +145,7 @@ jobs:
     - name: Generate coverage report
       run: |
         reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:"Html;Cobertura"
-        # Copy the generated Cobertura file to the expected location for Codecov
+        # Copy the generated Cobertura file to the expected location for SonarCloud
         cp coverage/report/Cobertura.xml coverage/coverage.cobertura.xml
 
     - name: End SonarCloud analysis
