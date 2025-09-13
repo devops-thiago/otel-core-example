@@ -10,6 +10,8 @@ using UserApi.Services;
 using UserApi.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using System.Text.Json;
+using System.Diagnostics.Metrics;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,12 @@ var builder = WebApplication.CreateBuilder(args);
 var serviceName = builder.Configuration["OpenTelemetry:ServiceName"] ?? "user-api";
 var serviceVersion = builder.Configuration["OpenTelemetry:ServiceVersion"] ?? "1.0.0";
 var environment = builder.Environment.EnvironmentName;
+
+// Create custom meter for application metrics
+var applicationMeter = new Meter("UserApi.Application", serviceVersion);
+var requestCounter = applicationMeter.CreateCounter<long>("user_requests_total", "requests", "Total number of user requests");
+var activeUsersGauge = applicationMeter.CreateUpDownCounter<int>("active_users", "users", "Number of active users");
+var requestDurationHistogram = applicationMeter.CreateHistogram<double>("request_duration_seconds", "seconds", "Request duration in seconds");
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -29,7 +37,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] [{SourceContext}] {Message:lj} {Properties:j}{NewLine}{Exception}")
     .WriteTo.OpenTelemetry(options =>
     {
-        options.Endpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"] ?? "http://localhost:4317";
+        options.Endpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"] ?? "http://localhost:4320";
         options.Protocol = Serilog.Sinks.OpenTelemetry.OtlpProtocol.Grpc;
     })
     .CreateLogger();
@@ -66,6 +74,12 @@ builder.Services.AddDbContext<UserDbContext>(options =>
 
 // Add services
 builder.Services.AddScoped<IUserService, UserService>();
+
+// Register custom metrics as singletons for dependency injection
+builder.Services.AddSingleton(applicationMeter);
+builder.Services.AddSingleton(requestCounter);
+builder.Services.AddSingleton(activeUsersGauge);
+builder.Services.AddSingleton(requestDurationHistogram);
 
 // Add health checks
 builder.Services.AddHealthChecks()
@@ -110,7 +124,7 @@ builder.Services.AddOpenTelemetry()
             .AddSource("UserApi")
             .AddOtlpExporter(options =>
             {
-                options.Endpoint = new Uri(builder.Configuration["OpenTelemetry:OtlpEndpoint"] ?? "http://localhost:4317");
+                options.Endpoint = new Uri(builder.Configuration["OpenTelemetry:OtlpEndpoint"] ?? "http://localhost:4320");
                 options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
             });
     })
@@ -119,9 +133,12 @@ builder.Services.AddOpenTelemetry()
         metrics
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
+            .AddRuntimeInstrumentation()  // Adds GC, memory, CPU, and thread pool metrics
+            .AddProcessInstrumentation()  // Adds process CPU and memory metrics
+            .AddMeter("UserApi.Application")  // Add our custom application metrics
             .AddOtlpExporter(options =>
             {
-                options.Endpoint = new Uri(builder.Configuration["OpenTelemetry:OtlpEndpoint"] ?? "http://localhost:4317");
+                options.Endpoint = new Uri(builder.Configuration["OpenTelemetry:OtlpEndpoint"] ?? "http://localhost:4320");
                 options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
             });
     });
@@ -161,8 +178,31 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+// Only use HTTPS redirection in non-Docker environments
+if (!app.Environment.EnvironmentName.Equals("Docker", StringComparison.OrdinalIgnoreCase))
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("SecureCors");
+
+// Add middleware to track custom metrics
+app.Use(async (context, next) =>
+{
+    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+    var tags = new TagList();
+    tags.Add("method", context.Request.Method);
+    tags.Add("endpoint", context.Request.Path.ToString());
+
+    requestCounter.Add(1, tags);
+
+    await next();
+
+    stopwatch.Stop();
+    var finalTags = tags;
+    finalTags.Add("status_code", context.Response.StatusCode.ToString());
+
+    requestDurationHistogram.Record(stopwatch.Elapsed.TotalSeconds, finalTags);
+});
 
 app.UseRouting();
 app.UseAuthorization();
