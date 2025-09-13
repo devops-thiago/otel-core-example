@@ -6,16 +6,24 @@ on:
   pull_request:
     branches: [main, develop]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   DOTNET_VERSION: '9.0.x'
   COVERAGE_THRESHOLD: 80
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 permissions:
   contents: read
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      build-cache-key: ${{ steps.cache-key.outputs.key }}
 
     steps:
     - name: Checkout code
@@ -28,6 +36,64 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    - name: Generate cache key
+      id: cache-key
+      run: |
+        echo "key=${{ runner.os }}-build-${{ hashFiles('**/*.csproj', '**/*.sln') }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Cache build output
+      uses: actions/cache@v4
+      with:
+        path: |
+          **/bin
+          **/obj
+        key: ${{ steps.cache-key.outputs.key }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ hashFiles('**/*.csproj', '**/*.sln') }}-
+
+    - name: Restore dependencies
+      run: dotnet restore UserApi.sln
+
+    - name: Build solution
+      run: dotnet build UserApi.sln --no-restore --configuration Release
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: |
+          **/bin/Release
+          **/obj/Release
+          UserApi.sln
+          **/*.csproj
+        retention-days: 1
+
+  code-quality:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-artifacts
+
     - name: Cache NuGet packages
       uses: actions/cache@v4
       with:
@@ -39,14 +105,40 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore UserApi.sln
 
-    - name: Build solution
-      run: dotnet build UserApi.sln --no-restore --configuration Release
-
     - name: Run code formatting check
       run: dotnet format UserApi.sln --verify-no-changes --verbosity diagnostic
 
     - name: Run linting
       run: dotnet build UserApi.sln --verbosity normal --configuration Release /p:TreatWarningsAsErrors=true
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-artifacts
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      run: dotnet restore UserApi.sln
 
     - name: Run tests
       run: dotnet test UserApi.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
@@ -58,7 +150,15 @@ jobs:
         # Copy the generated Cobertura file to the expected location
         cp coverage/report/Cobertura.xml coverage/coverage.cobertura.xml
 
-    - name: Upload coverage reports
+    - name: Upload coverage artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports
+        path: |
+          coverage/
+        retention-days: 30
+
+    - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7
       with:
         file: ./coverage/coverage.cobertura.xml
@@ -66,11 +166,10 @@ jobs:
         name: codecov-umbrella
         token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: false
-      continue-on-error: true  # Allow CI to continue even if Codecov fails
+      continue-on-error: true
 
     - name: Check coverage threshold
       run: |
-        # Use the generated OpenCover report for threshold check
         if [ -f "coverage/report/OpenCover.xml" ]; then
           dotnet tool install -g dotnet-coverage
           dotnet coverage report coverage/report/OpenCover.xml --threshold ${{ env.COVERAGE_THRESHOLD }}
@@ -80,7 +179,7 @@ jobs:
 
   security-scan:
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: build
 
     steps:
     - name: Checkout code
@@ -90,6 +189,19 @@ jobs:
       uses: actions/setup-dotnet@v5
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-artifacts
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
 
     - name: Restore dependencies
       run: dotnet restore UserApi.sln
@@ -101,7 +213,8 @@ jobs:
 
   sonar-analysis:
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: [build, test]
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
 
     steps:
     - name: Checkout code
@@ -114,10 +227,28 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-artifacts
+
+    - name: Download coverage artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: coverage-reports
+
     - name: Install SonarCloud scanner
       run: |
         dotnet tool install --global dotnet-sonarscanner
         dotnet tool install --global dotnet-reportgenerator-globaltool
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
 
     - name: Restore dependencies
       run: dotnet restore UserApi.sln
@@ -126,26 +257,54 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-        dotnet sonarscanner begin \
-          /k:"devops-thiago_otel-core-example" \
-          /o:"devops-thiago" \
-          /n:"UserApi" \
-          /v:"1.0.0" \
-          /d:sonar.host.url="https://sonarcloud.io" \
-          /d:sonar.token="$SONAR_TOKEN" \
-          /d:sonar.dotnet.coverage.reportPaths="coverage/**/coverage.cobertura.xml"
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          dotnet sonarscanner begin \
+            /k:"devops-thiago_otel-core-example" \
+            /o:"devops-thiago" \
+            /n:"UserApi" \
+            /v:"1.0.0" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.token="$SONAR_TOKEN" \
+            /d:sonar.pullrequest.key="${{ github.event.number }}" \
+            /d:sonar.pullrequest.branch="${{ github.head_ref }}" \
+            /d:sonar.pullrequest.base="${{ github.base_ref }}" \
+            /d:sonar.cs.vscoveragexml.reportsPaths="coverage/reports/coverage.cobertura.xml,coverage/sonar/SonarQube.xml" \
+            /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
+            /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**"
+        else
+          dotnet sonarscanner begin \
+            /k:"devops-thiago_otel-core-example" \
+            /o:"devops-thiago" \
+            /n:"UserApi" \
+            /v:"1.0.0" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.token="$SONAR_TOKEN" \
+            /d:sonar.branch.name="${{ github.ref_name }}" \
+            /d:sonar.cs.vscoveragexml.reportsPaths="coverage/reports/coverage.cobertura.xml,coverage/sonar/SonarQube.xml" \
+            /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
+            /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**"
+        fi
 
-    - name: Build solution
-      run: dotnet build UserApi.sln --no-restore --configuration Release
+    - name: Build solution (using cached artifacts)
+      run: echo "Using pre-built artifacts from build job"
 
-    - name: Run tests with coverage
-      run: dotnet test UserApi.sln --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory ./coverage
-
-    - name: Generate coverage report
+    - name: List available coverage files
       run: |
-        reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:"Html;Cobertura"
-        # Generate HTML report for human-readable coverage results
-        # Note: SonarCloud will use the original coverage.cobertura.xml files directly
+        echo "=== Available coverage files ==="
+        find . -name "*.xml" -type f | grep -i coverage | head -10
+        echo "=== End coverage files ==="
+
+    - name: Prepare coverage for SonarCloud
+      run: |
+        # Coverage reports should already be available from the test job
+        if [ -f "coverage/coverage.cobertura.xml" ]; then
+          echo "Using existing coverage file: coverage/coverage.cobertura.xml"
+          mkdir -p coverage/reports
+          cp coverage/coverage.cobertura.xml coverage/reports/coverage.cobertura.xml
+        else
+          echo "Warning: Expected coverage file not found, searching for alternatives..."
+          find . -name "coverage.cobertura.xml" -type f | head -5
+        fi
 
     - name: End SonarCloud analysis
       env:
@@ -155,7 +314,7 @@ jobs:
 
   docker-build:
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: [build, test, code-quality]
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
@@ -197,7 +356,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build-and-test, docker-build]
+    needs: [docker-build]
     if: github.ref == 'refs/heads/main'
 
     steps:

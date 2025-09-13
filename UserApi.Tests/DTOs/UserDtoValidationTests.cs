@@ -199,7 +199,7 @@ namespace UserApi.Tests.DTOs
             // Arrange
             var dto = new UpdateUserDto
             {
-                FirstName = "", // Empty string is allowed for updates
+                FirstName = "",
                 LastName = "Doe",
                 Email = "john.doe@example.com"
             };
@@ -208,7 +208,7 @@ namespace UserApi.Tests.DTOs
             var validationResults = ValidateModel(dto);
 
             // Assert
-            validationResults.Should().BeEmpty(); // No validation errors expected
+            validationResults.Should().BeEmpty();
         }
 
         [Fact]
@@ -218,7 +218,7 @@ namespace UserApi.Tests.DTOs
             var dto = new UpdateUserDto
             {
                 FirstName = "John",
-                LastName = "", // Empty string is allowed for updates
+                LastName = "",
                 Email = "john.doe@example.com"
             };
 
@@ -226,7 +226,7 @@ namespace UserApi.Tests.DTOs
             var validationResults = ValidateModel(dto);
 
             // Assert
-            validationResults.Should().BeEmpty(); // No validation errors expected
+            validationResults.Should().BeEmpty();
         }
 
         [Theory]

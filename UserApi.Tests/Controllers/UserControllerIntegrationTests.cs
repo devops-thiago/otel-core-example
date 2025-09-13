@@ -297,7 +297,7 @@ namespace UserApi.Tests.Controllers
             // Arrange
             var createUserDto = new CreateUserDto
             {
-                // Missing required fields - using empty strings instead of null
+                // Missing required fields
                 FirstName = "",
                 LastName = "",
                 Email = ""
@@ -368,7 +368,7 @@ namespace UserApi.Tests.Controllers
             var updateUserDto = new UpdateUserDto
             {
                 FirstName = "UpdatedFirstName"
-                // Other fields are null/not provided
+                // Other fields are null
             };
             var json = JsonSerializer.Serialize(updateUserDto);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -386,8 +386,8 @@ namespace UserApi.Tests.Controllers
 
             result.Should().NotBeNull();
             result!.FirstName.Should().Be("UpdatedFirstName");
-            result.LastName.Should().Be(user.LastName); // Should remain unchanged
-            result.Email.Should().Be(user.Email); // Should remain unchanged
+            result.LastName.Should().Be(user.LastName);
+            result.Email.Should().Be(user.Email);
         }
 
         [Theory]
