@@ -88,6 +88,9 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    - name: Restore dependencies
+      run: dotnet restore UserApi.sln
+
     - name: Run security scan
       run: |
         dotnet list package --vulnerable --include-transitive
