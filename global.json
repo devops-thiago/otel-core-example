@@ -1,7 +1,7 @@
 {
   "sdk": {
-    "version": "9.0.109",
-    "rollForward": "latestMinor"
+    "version": "9.0.x",
+    "rollForward": "latestMajor"
   }
 }
 

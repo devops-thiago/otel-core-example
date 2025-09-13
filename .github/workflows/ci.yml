@@ -124,16 +124,14 @@ jobs:
         dotnet sonarscanner begin \
           /k:"devops-thiago_otel-core-example" \
           /o:"devops-thiago" \
+          /n:"UserApi" \
+          /v:"1.0.0" \
           /d:sonar.host.url="https://sonarcloud.io" \
           /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-          /d:sonar.cs.opencover.reportsPaths="coverage/report/OpenCover.xml" \
-          /d:sonar.projectBaseDir="." \
-          /d:sonar.sources="." \
+          /d:sonar.cs.vscoveragexml.reportsPaths="coverage/report/Cobertura.xml" \
           /d:sonar.exclusions="**/bin/**,**/obj/**,**/TestResults/**,**/coverage/**,**/UserApi.Tests/**,**/node_modules/**,**/*.min.js,**/*.min.css" \
           /d:sonar.test.inclusions="**/UserApi.Tests/**/*.cs" \
-          /d:sonar.coverage.exclusions="**/UserApi.Tests/**,**/Program.cs,**/Startup.cs,**/Migrations/**" \
-          /d:sonar.projectName="UserApi" \
-          /d:sonar.projectVersion="1.0.0"
+          /d:sonar.coverage.exclusions="**/UserApi.Tests/**,**/Program.cs,**/Startup.cs,**/Migrations/**"
 
     - name: Build solution
       run: dotnet build UserApi.sln --no-restore --configuration Release
@@ -143,7 +141,7 @@ jobs:
 
     - name: Generate coverage report
       run: |
-        reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:"Html;Cobertura;OpenCover"
+        reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:"Html;Cobertura"
         # Copy the generated Cobertura file to the expected location for Codecov
         cp coverage/report/Cobertura.xml coverage/coverage.cobertura.xml
 
@@ -151,16 +149,6 @@ jobs:
       run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v5
-      with:
-        file: ./coverage/coverage.cobertura.xml
-        flags: unittests
-        name: codecov-umbrella
-        token: ${{ secrets.CODECOV_TOKEN }}
-        fail_ci_if_error: false
-      continue-on-error: true
 
   docker-build:
     runs-on: ubuntu-latest
