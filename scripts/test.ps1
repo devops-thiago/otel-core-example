@@ -37,9 +37,9 @@ if ($coverageFile) {
     [xml]$coverageXml = Get-Content $coverageFile.FullName
     $lineRate = [double]$coverageXml.coverage.'line-rate'
     $coveragePercent = [math]::Round($lineRate * 100, 2)
-    
+
     Write-Host "Coverage: $coveragePercent%" -ForegroundColor Cyan
-    
+
     if ($coveragePercent -lt $CoverageThreshold) {
         Write-Host "Coverage is below threshold of $CoverageThreshold%!" -ForegroundColor Red
         exit 1
@@ -53,3 +53,4 @@ if ($coverageFile) {
 
 Write-Host "All tests passed and coverage requirements met!" -ForegroundColor Green
 Write-Host "Coverage report available at: coverage/report/index.html" -ForegroundColor Cyan
+

@@ -63,7 +63,7 @@ The API will be available at:
 ### Manual Setup
 
 1. **Prerequisites**:
-   - .NET 8 SDK
+   - .NET 9 SDK
    - Docker (for Alloy)
 
 2. **Start Alloy**:

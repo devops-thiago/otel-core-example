@@ -12,3 +12,4 @@ global using UserApi.Data;
 global using UserApi.DTOs;
 global using UserApi.Models;
 global using UserApi.Services;
+

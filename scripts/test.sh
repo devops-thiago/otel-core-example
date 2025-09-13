@@ -36,9 +36,9 @@ COVERAGE_FILE=$(find coverage -name "coverage.cobertura.xml" | head -1)
 if [ -n "$COVERAGE_FILE" ]; then
     LINE_RATE=$(grep -o 'line-rate="[^"]*"' "$COVERAGE_FILE" | grep -o '[0-9.]*')
     COVERAGE_PERCENT=$(echo "$LINE_RATE * 100" | bc -l | xargs printf "%.2f")
-    
+
     echo "Coverage: ${COVERAGE_PERCENT}%"
-    
+
     if (( $(echo "$COVERAGE_PERCENT < $COVERAGE_THRESHOLD" | bc -l) )); then
         echo "Coverage is below threshold of ${COVERAGE_THRESHOLD}%!"
         exit 1
@@ -52,3 +52,4 @@ fi
 
 echo "All tests passed and coverage requirements met!"
 echo "Coverage report available at: coverage/report/index.html"
+

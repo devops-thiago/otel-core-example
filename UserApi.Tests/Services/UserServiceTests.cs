@@ -29,6 +29,12 @@ namespace UserApi.Tests.Services
             _mockLogger = new Mock<ILogger<UserService>>();
             _userService = new UserService(_context, _mockLogger.Object);
             _fixture = new Fixture();
+
+            // Configure AutoFixture to generate proper dates
+            _fixture.Customize<User>(c => c
+                .With(x => x.CreatedAt, () => DateTime.UtcNow.AddMinutes(-10)) // Past date
+                .With(x => x.UpdatedAt, () => DateTime.UtcNow.AddMinutes(-5))  // Past date, but after CreatedAt
+                .Without(x => x.Id));
         }
 
         [Fact]
@@ -142,6 +148,8 @@ namespace UserApi.Tests.Services
                 .With(x => x.PhoneNumber, "+9999999999")
                 .Create();
 
+            var beforeUpdate = DateTime.UtcNow;
+
             // Act
             var result = await _userService.UpdateUserAsync(user.Id, updateUserDto);
 
@@ -152,7 +160,7 @@ namespace UserApi.Tests.Services
             result.LastName.Should().Be(updateUserDto.LastName);
             result.Email.Should().Be(updateUserDto.Email);
             result.PhoneNumber.Should().Be(updateUserDto.PhoneNumber);
-            result.UpdatedAt.Should().BeAfter(result.CreatedAt);
+            result.UpdatedAt.Should().BeAfter(beforeUpdate.AddSeconds(-1)); // Allow for some time variance
         }
 
         [Fact]

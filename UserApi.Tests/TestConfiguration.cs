@@ -25,6 +25,12 @@ namespace UserApi.Tests
                     options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid().ToString());
                 });
 
+                // Configure JSON options for testing to avoid PipeWriter issues
+                services.ConfigureHttpJsonOptions(options =>
+                {
+                    options.SerializerOptions.DefaultBufferSize = 1;
+                });
+
                 // Ensure database is created and seeded
                 var serviceProvider = services.BuildServiceProvider();
                 using var scope = serviceProvider.CreateScope();

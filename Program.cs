@@ -27,7 +27,12 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Fix for .NET 9 PipeWriter compatibility issue - disable async streaming
+        options.JsonSerializerOptions.DefaultBufferSize = 1;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -130,7 +135,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Health check endpoint
-app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow }))
+app.MapGet("/health", () => "Healthy")
     .WithName("HealthCheck")
     .WithTags("Health");
 
@@ -155,5 +160,5 @@ finally
     Log.CloseAndFlush();
 }
 
-// Make Program class accessible to tests
+// Make the implicit Program class accessible to the test project
 public partial class Program { }
