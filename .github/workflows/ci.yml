@@ -262,6 +262,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         PR_NUMBER: ${{ github.event.number }}
         BRANCH_NAME: ${{ github.head_ref }}
+        BASE_BRANCH: ${{ github.base_ref }}
       run: |
         if [ "${{ github.event_name }}" == "pull_request" ]; then
           dotnet sonarscanner begin \
@@ -273,7 +274,7 @@ jobs:
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.pullrequest.key="$PR_NUMBER" \
             /d:sonar.pullrequest.branch="$BRANCH_NAME" \
-             /d:sonar.pullrequest.base="${{ github.base_ref }}" \
+             /d:sonar.pullrequest.base="$BASE_BRANCH" \
             /d:sonar.cs.opencover.reportsPaths="coverage/report/OpenCover.xml" \
             /d:sonar.cs.cobertura.reportsPaths="coverage/**/coverage.cobertura.xml" \
             /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
