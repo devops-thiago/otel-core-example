@@ -74,6 +74,10 @@ jobs:
           **/obj/Release
           UserApi.sln
           **/*.csproj
+          **/*.props
+          **/*.targets
+          Directory.Build.props
+          global.json
         retention-days: 1
 
   code-quality:
@@ -268,7 +272,8 @@ jobs:
             /d:sonar.pullrequest.key="${{ github.event.number }}" \
             /d:sonar.pullrequest.branch="${{ github.head_ref }}" \
             /d:sonar.pullrequest.base="${{ github.base_ref }}" \
-            /d:sonar.cs.vscoveragexml.reportsPaths="coverage/reports/coverage.cobertura.xml,coverage/sonar/SonarQube.xml" \
+            /d:sonar.cs.opencover.reportsPaths="coverage/report/OpenCover.xml" \
+            /d:sonar.cs.cobertura.reportsPaths="coverage/coverage.cobertura.xml" \
             /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
             /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**"
         else
@@ -280,13 +285,14 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.branch.name="${{ github.ref_name }}" \
-            /d:sonar.cs.vscoveragexml.reportsPaths="coverage/reports/coverage.cobertura.xml,coverage/sonar/SonarQube.xml" \
+            /d:sonar.cs.opencover.reportsPaths="coverage/report/OpenCover.xml" \
+            /d:sonar.cs.cobertura.reportsPaths="coverage/coverage.cobertura.xml" \
             /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
             /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**"
         fi
 
-    - name: Build solution (using cached artifacts)
-      run: echo "Using pre-built artifacts from build job"
+    - name: Build solution for SonarQube analysis
+      run: dotnet build UserApi.sln --no-restore --configuration Release
 
     - name: List available coverage files
       run: |
@@ -296,15 +302,27 @@ jobs:
 
     - name: Prepare coverage for SonarCloud
       run: |
-        # Coverage reports should already be available from the test job
+        echo "=== Verifying coverage files for SonarCloud ==="
+
+        # Check if coverage files exist
         if [ -f "coverage/coverage.cobertura.xml" ]; then
-          echo "Using existing coverage file: coverage/coverage.cobertura.xml"
-          mkdir -p coverage/reports
-          cp coverage/coverage.cobertura.xml coverage/reports/coverage.cobertura.xml
+          echo "✓ Found Cobertura coverage file: coverage/coverage.cobertura.xml"
         else
-          echo "Warning: Expected coverage file not found, searching for alternatives..."
-          find . -name "coverage.cobertura.xml" -type f | head -5
+          echo "✗ Cobertura coverage file not found at expected location"
+          echo "Searching for coverage files..."
+          find . -name "*.cobertura.xml" -type f 2>/dev/null || echo "No Cobertura files found"
         fi
+
+        if [ -f "coverage/report/OpenCover.xml" ]; then
+          echo "✓ Found OpenCover coverage file: coverage/report/OpenCover.xml"
+        else
+          echo "✗ OpenCover coverage file not found at expected location"
+          echo "Searching for OpenCover files..."
+          find . -name "OpenCover.xml" -type f 2>/dev/null || echo "No OpenCover files found"
+        fi
+
+        echo "=== All available coverage-related files ==="
+        find . -name "*.xml" -type f | grep -i coverage | head -10 || echo "No coverage XML files found"
 
     - name: End SonarCloud analysis
       env:
