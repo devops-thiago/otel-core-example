@@ -217,9 +217,9 @@ namespace UserApi.Tests.Services
             result.Should().NotBeNull();
             result!.Id.Should().Be(user.Id);
             result.FirstName.Should().Be(updateUserDto.FirstName);
-            result.LastName.Should().Be(user.LastName); // Should remain unchanged
-            result.Email.Should().Be(user.Email); // Should remain unchanged
-            result.PhoneNumber.Should().Be(user.PhoneNumber); // Should remain unchanged
+            result.LastName.Should().Be(user.LastName);
+            result.Email.Should().Be(user.Email);
+            result.PhoneNumber.Should().Be(user.PhoneNumber);
         }
 
         [Fact]
@@ -280,7 +280,7 @@ namespace UserApi.Tests.Services
             var updateUserDto = new UpdateUserDto
             {
                 FirstName = "UpdatedFirstName",
-                Email = "" // Empty string should not update email
+                Email = ""
             };
 
             // Act
@@ -289,7 +289,7 @@ namespace UserApi.Tests.Services
             // Assert
             result.Should().NotBeNull();
             result!.FirstName.Should().Be(updateUserDto.FirstName);
-            result.Email.Should().Be(user.Email); // Should remain unchanged
+            result.Email.Should().Be(user.Email);
         }
 
         [Fact]
@@ -312,7 +312,7 @@ namespace UserApi.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result!.PhoneNumber.Should().Be(originalPhoneNumber); // Should remain unchanged
+            result!.PhoneNumber.Should().Be(originalPhoneNumber);
         }
 
         [Fact]
@@ -367,8 +367,8 @@ namespace UserApi.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result!.FirstName.Should().Be(user.FirstName); // Should remain unchanged
-            result.LastName.Should().Be(updateUserDto.LastName); // Should be updated
+            result!.FirstName.Should().Be(user.FirstName);
+            result.LastName.Should().Be(updateUserDto.LastName);
         }
 
         [Theory]
@@ -391,8 +391,8 @@ namespace UserApi.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result!.FirstName.Should().Be(updateUserDto.FirstName); // Should be updated
-            result.LastName.Should().Be(user.LastName); // Should remain unchanged
+            result!.FirstName.Should().Be(updateUserDto.FirstName);
+            result.LastName.Should().Be(user.LastName);
         }
 
         [Fact]
@@ -414,8 +414,8 @@ namespace UserApi.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result!.FirstName.Should().Be(user.FirstName); // Should remain unchanged
-            result.LastName.Should().Be(updateUserDto.LastName); // Should be updated
+            result!.FirstName.Should().Be(user.FirstName);
+            result.LastName.Should().Be(updateUserDto.LastName);
         }
 
         [Fact]
@@ -437,8 +437,8 @@ namespace UserApi.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result!.FirstName.Should().Be(updateUserDto.FirstName); // Should be updated
-            result.LastName.Should().Be(user.LastName); // Should remain unchanged
+            result!.FirstName.Should().Be(updateUserDto.FirstName);
+            result.LastName.Should().Be(user.LastName);
         }
 
         public void Dispose()
