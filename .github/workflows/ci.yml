@@ -273,11 +273,11 @@ jobs:
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.pullrequest.key="$PR_NUMBER" \
             /d:sonar.pullrequest.branch="$BRANCH_NAME" \
-            /d:sonar.pullrequest.base="$BRANCH_NAME" \
+             /d:sonar.pullrequest.base="${{ github.base_ref }}" \
             /d:sonar.cs.opencover.reportsPaths="coverage/report/OpenCover.xml" \
-            /d:sonar.cs.cobertura.reportsPaths="coverage/coverage.cobertura.xml" \
+            /d:sonar.cs.cobertura.reportsPaths="coverage/**/coverage.cobertura.xml" \
             /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
-            /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**"
+            /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**,**/coverage/**,**/test-coverage/**,**/TestResults/**,**/*.coverage,**/*.coveragexml,**/*.cobertura.xml"
         else
           dotnet sonarscanner begin \
             /k:"devops-thiago_otel-core-example" \
@@ -288,9 +288,9 @@ jobs:
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.branch.name="${{ github.ref_name }}" \
             /d:sonar.cs.opencover.reportsPaths="coverage/report/OpenCover.xml" \
-            /d:sonar.cs.cobertura.reportsPaths="coverage/coverage.cobertura.xml" \
+            /d:sonar.cs.cobertura.reportsPaths="coverage/**/coverage.cobertura.xml" \
             /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
-            /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**"
+            /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**,**/coverage/**,**/test-coverage/**,**/TestResults/**,**/*.coverage,**/*.coveragexml,**/*.cobertura.xml"
         fi
 
     - name: Build solution for SonarQube analysis
@@ -306,25 +306,34 @@ jobs:
       run: |
         echo "=== Verifying coverage files for SonarCloud ==="
 
-        # Check if coverage files exist
+        # List all coverage files found
+        echo "Coverage files in subdirectories:"
+        find coverage -name "coverage.cobertura.xml" -type f | head -5
+
+        # Check if consolidated files exist
         if [ -f "coverage/coverage.cobertura.xml" ]; then
-          echo "✓ Found Cobertura coverage file: coverage/coverage.cobertura.xml"
+          echo "✓ Found consolidated Cobertura file: coverage/coverage.cobertura.xml"
         else
-          echo "✗ Cobertura coverage file not found at expected location"
-          echo "Searching for coverage files..."
-          find . -name "*.cobertura.xml" -type f 2>/dev/null || echo "No Cobertura files found"
+          echo "✗ Consolidated Cobertura file not found"
+          echo "Will use individual coverage files: coverage/**/coverage.cobertura.xml"
         fi
 
         if [ -f "coverage/report/OpenCover.xml" ]; then
-          echo "✓ Found OpenCover coverage file: coverage/report/OpenCover.xml"
+          echo "✓ Found OpenCover file: coverage/report/OpenCover.xml"
         else
-          echo "✗ OpenCover coverage file not found at expected location"
-          echo "Searching for OpenCover files..."
-          find . -name "OpenCover.xml" -type f 2>/dev/null || echo "No OpenCover files found"
+          echo "✗ OpenCover file not found - reportgenerator may have failed"
+          echo "Attempting to regenerate reports..."
+          dotnet tool install -g dotnet-reportgenerator-globaltool || echo "ReportGenerator already installed"
+          reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:"Html;Cobertura;OpenCover" || echo "Report generation failed"
+
+          if [ -f "coverage/report/Cobertura.xml" ]; then
+            cp coverage/report/Cobertura.xml coverage/coverage.cobertura.xml || echo "Failed to copy consolidated report"
+            echo "✓ Successfully generated consolidated coverage files"
+          fi
         fi
 
-        echo "=== All available coverage-related files ==="
-        find . -name "*.xml" -type f | grep -i coverage | head -10 || echo "No coverage XML files found"
+        echo "=== Final coverage file verification ==="
+        ls -la coverage/coverage.cobertura.xml coverage/report/OpenCover.xml 2>/dev/null || echo "Some consolidated files missing"
 
     - name: End SonarCloud analysis
       env:
