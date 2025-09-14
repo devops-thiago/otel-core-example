@@ -121,8 +121,13 @@ pids
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
+# Coverage directories and files
 coverage/
+test-coverage/
+**/TestResults/
+*.coverage
+*.coveragexml
+*.cobertura.xml
 
 # SonarCloud
 .sonarqube/
@@ -178,3 +183,4 @@ node_modules/
 
 # TernJS port file
 .tern-port
+**/report/
