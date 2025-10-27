@@ -66,7 +66,7 @@ jobs:
       run: dotnet build UserApi.sln --no-restore --configuration Release
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: build-artifacts
         path: |
@@ -155,7 +155,7 @@ jobs:
         cp coverage/report/Cobertura.xml coverage/coverage.cobertura.xml
 
     - name: Upload coverage artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: coverage-reports
         path: |
