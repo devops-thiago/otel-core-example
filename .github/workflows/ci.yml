@@ -42,7 +42,7 @@ jobs:
         echo "key=${{ runner.os }}-build-${{ hashFiles('**/*.csproj', '**/*.sln') }}-${{ github.sha }}" >> $GITHUB_OUTPUT
 
     - name: Cache NuGet packages
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -50,7 +50,7 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Cache build output
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           **/bin
@@ -99,7 +99,7 @@ jobs:
         name: build-artifacts
 
     - name: Cache NuGet packages
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -134,7 +134,7 @@ jobs:
         name: build-artifacts
 
     - name: Cache NuGet packages
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -200,7 +200,7 @@ jobs:
         name: build-artifacts
 
     - name: Cache NuGet packages
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -247,7 +247,7 @@ jobs:
         dotnet tool install --global dotnet-reportgenerator-globaltool
 
     - name: Cache NuGet packages
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
