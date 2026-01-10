@@ -1,4 +1,4 @@
-# Use the official .NET 9 runtime as the base image
+# Use the official .NET 10 runtime as the base image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 EXPOSE 8080
@@ -7,7 +7,7 @@ EXPOSE 8081
 # Install curl for health checks
 RUN apt-get update && apt-get install --no-install-recommends -y curl && rm -rf /var/lib/apt/lists/*
 
-# Use the official .NET 9 SDK image for building
+# Use the official .NET 10 SDK image for building
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
