@@ -382,7 +382,7 @@ jobs:
         docker inspect otel-core-example:pr-${{ github.event.pull_request.number }}
 
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
+      uses: aquasecurity/trivy-action@0.24.0
       with:
         image-ref: otel-core-example:pr-${{ github.event.pull_request.number }}
         format: 'sarif'
@@ -392,7 +392,7 @@ jobs:
 
     - name: Upload Trivy scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v4
-      if: always()
+      if: ${{ always() && github.event.pull_request.head.repo.full_name == github.repository }}
       with:
         sarif_file: 'trivy-results.sarif'
 

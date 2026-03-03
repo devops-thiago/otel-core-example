@@ -29,17 +29,17 @@ public class UserControllerIntegrationTests : IDisposable
         // Configure AutoFixture to generate valid data
         _fixture.Customize<CreateUserDto>(c => c
             .With(x => x.Email, () => _fixture.Create<string>() + "@example.com")
-            .With(x => x.Name, () => "Test" + _fixture.Create<string>().Substring(0, 5))
+            .With(x => x.Name, () => "Test" + Guid.NewGuid().ToString("N")[..5])
             .With(x => x.Bio, () => "Test Bio"));
 
         _fixture.Customize<UpdateUserDto>(c => c
             .With(x => x.Email, () => _fixture.Create<string>() + "@example.com")
-            .With(x => x.Name, () => "Updated" + _fixture.Create<string>().Substring(0, 5))
+            .With(x => x.Name, () => "Updated" + Guid.NewGuid().ToString("N")[..5])
             .With(x => x.Bio, () => "Updated Bio"));
 
         _fixture.Customize<User>(c => c
             .With(x => x.Email, () => _fixture.Create<string>() + "@example.com")
-            .With(x => x.Name, () => "Test" + _fixture.Create<string>().Substring(0, 5))
+            .With(x => x.Name, () => "Test" + Guid.NewGuid().ToString("N")[..5])
             .With(x => x.Bio, () => "Test Bio")
             .With(x => x.CreatedAt, () => DateTime.UtcNow)
             .With(x => x.UpdatedAt, () => DateTime.UtcNow)
