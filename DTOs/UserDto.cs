@@ -6,6 +6,7 @@ public class CreateUserDto
 {
     [Required]
     [StringLength(100)]
+    [RegularExpression(@".*\S.*", ErrorMessage = "Name cannot be empty or contain only whitespace.")]
     public string Name { get; set; } = string.Empty;
 
     [Required]
