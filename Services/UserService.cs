@@ -5,192 +5,184 @@ using UserApi.Data;
 using UserApi.DTOs;
 using UserApi.Models;
 
-namespace UserApi.Services
+namespace UserApi.Services;
+
+public interface IUserService
 {
-    public interface IUserService
+    Task<IEnumerable<UserResponseDto>> GetAllUsersAsync();
+    Task<UserResponseDto?> GetUserByIdAsync(int id);
+    Task<UserResponseDto> CreateUserAsync(CreateUserDto createUserDto);
+    Task<UserResponseDto?> UpdateUserAsync(int id, UpdateUserDto updateUserDto);
+    Task<bool> DeleteUserAsync(int id);
+}
+
+public class UserService : IUserService
+{
+    private readonly UserDbContext _context;
+    private readonly ILogger<UserService> _logger;
+
+    public UserService(UserDbContext context, ILogger<UserService> logger)
     {
-        Task<IEnumerable<UserResponseDto>> GetAllUsersAsync();
-        Task<UserResponseDto?> GetUserByIdAsync(int id);
-        Task<UserResponseDto> CreateUserAsync(CreateUserDto createUserDto);
-        Task<UserResponseDto?> UpdateUserAsync(int id, UpdateUserDto updateUserDto);
-        Task<bool> DeleteUserAsync(int id);
+        _context = context;
+        _logger = logger;
     }
 
-    public class UserService : IUserService
+    public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
     {
-        private readonly UserDbContext _context;
-        private readonly ILogger<UserService> _logger;
+        _logger.LogInformation("Getting all users");
 
-        public UserService(UserDbContext context, ILogger<UserService> logger)
+        var users = await _context.Users.ToListAsync();
+
+        return users.Select(MapToResponseDto);
+    }
+
+    public async Task<UserResponseDto?> GetUserByIdAsync(int id)
+    {
+        _logger.LogInformation("Getting user with ID: {UserId}", id);
+
+        var user = await _context.Users.FindAsync(id);
+
+        if (user == null)
         {
-            _context = context;
-            _logger = logger;
+            _logger.LogWarning("User with ID {UserId} not found", id);
+            return null;
         }
 
-        public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
+        return MapToResponseDto(user);
+    }
+
+    public async Task<UserResponseDto> CreateUserAsync(CreateUserDto createUserDto)
+    {
+        var sanitizedEmail = SanitizeEmail(createUserDto.Email);
+        _logger.LogInformation("Creating new user with email: {Email}", sanitizedEmail);
+
+        // Check if email already exists
+        var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == createUserDto.Email);
+        if (existingUser != null)
         {
-            _logger.LogInformation("Getting all users");
-
-            var users = await _context.Users.ToListAsync();
-
-            return users.Select(MapToResponseDto);
+            _logger.LogWarning("User with email {Email} already exists", sanitizedEmail);
+            throw new InvalidOperationException("A user with this email already exists.");
         }
 
-        public async Task<UserResponseDto?> GetUserByIdAsync(int id)
+        var user = new User
         {
-            _logger.LogInformation("Getting user with ID: {UserId}", id);
+            Name = createUserDto.Name,
+            Email = createUserDto.Email,
+            Bio = createUserDto.Bio,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
 
-            var user = await _context.Users.FindAsync(id);
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
 
-            if (user == null)
-            {
-                _logger.LogWarning("User with ID {UserId} not found", id);
-                return null;
-            }
+        _logger.LogInformation("User created successfully with ID: {UserId}", user.Id);
 
-            return MapToResponseDto(user);
+        return MapToResponseDto(user);
+    }
+
+    public async Task<UserResponseDto?> UpdateUserAsync(int id, UpdateUserDto updateUserDto)
+    {
+        _logger.LogInformation("Updating user with ID: {UserId}", id);
+
+        var user = await _context.Users.FindAsync(id);
+        if (user == null)
+        {
+            _logger.LogWarning("User with ID {UserId} not found for update", id);
+            return null;
         }
 
-        public async Task<UserResponseDto> CreateUserAsync(CreateUserDto createUserDto)
+        // Check if email is being changed and if it already exists
+        if (!string.IsNullOrEmpty(updateUserDto.Email) && updateUserDto.Email != user.Email)
         {
-            var sanitizedEmail = SanitizeEmail(createUserDto.Email);
-            _logger.LogInformation("Creating new user with email: {Email}", sanitizedEmail);
-
-            // Check if email already exists
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == createUserDto.Email);
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == updateUserDto.Email);
             if (existingUser != null)
             {
+                var sanitizedEmail = SanitizeEmail(updateUserDto.Email);
                 _logger.LogWarning("User with email {Email} already exists", sanitizedEmail);
                 throw new InvalidOperationException("A user with this email already exists.");
             }
-
-            var user = new User
-            {
-                FirstName = createUserDto.FirstName,
-                LastName = createUserDto.LastName,
-                Email = createUserDto.Email,
-                PhoneNumber = createUserDto.PhoneNumber,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("User created successfully with ID: {UserId}", user.Id);
-
-            return MapToResponseDto(user);
         }
 
-        public async Task<UserResponseDto?> UpdateUserAsync(int id, UpdateUserDto updateUserDto)
+        // Update only provided fields
+        if (!string.IsNullOrEmpty(updateUserDto.Name))
         {
-            _logger.LogInformation("Updating user with ID: {UserId}", id);
-
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                _logger.LogWarning("User with ID {UserId} not found for update", id);
-                return null;
-            }
-
-            // Check if email is being changed and if it already exists
-            if (!string.IsNullOrEmpty(updateUserDto.Email) && updateUserDto.Email != user.Email)
-            {
-                var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == updateUserDto.Email);
-                if (existingUser != null)
-                {
-                    var sanitizedEmail = SanitizeEmail(updateUserDto.Email);
-                    _logger.LogWarning("User with email {Email} already exists", sanitizedEmail);
-                    throw new InvalidOperationException("A user with this email already exists.");
-                }
-            }
-
-            // Update only provided fields
-            if (!string.IsNullOrEmpty(updateUserDto.FirstName))
-            {
-                user.FirstName = updateUserDto.FirstName;
-            }
-
-            if (!string.IsNullOrEmpty(updateUserDto.LastName))
-            {
-                user.LastName = updateUserDto.LastName;
-            }
-
-            if (!string.IsNullOrEmpty(updateUserDto.Email))
-            {
-                user.Email = updateUserDto.Email;
-            }
-
-            if (updateUserDto.PhoneNumber != null)
-            {
-                user.PhoneNumber = updateUserDto.PhoneNumber;
-            }
-
-            user.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("User with ID {UserId} updated successfully", id);
-
-            return MapToResponseDto(user);
+            user.Name = updateUserDto.Name;
         }
 
-        public async Task<bool> DeleteUserAsync(int id)
+        if (!string.IsNullOrEmpty(updateUserDto.Email))
         {
-            _logger.LogInformation("Deleting user with ID: {UserId}", id);
-
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                _logger.LogWarning("User with ID {UserId} not found for deletion", id);
-                return false;
-            }
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("User with ID {UserId} deleted successfully", id);
-
-            return true;
+            user.Email = updateUserDto.Email;
         }
 
-        private static UserResponseDto MapToResponseDto(User user)
+        if (updateUserDto.Bio != null)
         {
-            return new UserResponseDto
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                CreatedAt = user.CreatedAt,
-                UpdatedAt = user.UpdatedAt
-            };
+            user.Bio = updateUserDto.Bio;
         }
 
-        private static string SanitizeEmail(string email)
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("User with ID {UserId} updated successfully", id);
+
+        return MapToResponseDto(user);
+    }
+
+    public async Task<bool> DeleteUserAsync(int id)
+    {
+        _logger.LogInformation("Deleting user with ID: {UserId}", id);
+
+        var user = await _context.Users.FindAsync(id);
+        if (user == null)
         {
-            if (string.IsNullOrEmpty(email))
-            {
-                return "[empty]";
-            }
-
-            var atIndex = email.IndexOf('@');
-            if (atIndex < 0)
-            {
-                return "[invalid]";
-            }
-
-            // Keep first character and domain, mask the rest
-            var localPart = email.Substring(0, atIndex);
-            var domain = email.Substring(atIndex);
-
-            if (localPart.Length <= 1)
-            {
-                return $"*{domain}";
-            }
-
-            return $"{localPart[0]}***{domain}";
+            _logger.LogWarning("User with ID {UserId} not found for deletion", id);
+            return false;
         }
+
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("User with ID {UserId} deleted successfully", id);
+
+        return true;
+    }
+
+    private static UserResponseDto MapToResponseDto(User user)
+    {
+        return new UserResponseDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Bio = user.Bio,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt
+        };
+    }
+
+    private static string SanitizeEmail(string email)
+    {
+        if (string.IsNullOrEmpty(email))
+        {
+            return "[empty]";
+        }
+
+        var atIndex = email.IndexOf('@');
+        if (atIndex < 0)
+        {
+            return "[invalid]";
+        }
+
+        // Keep first character and domain, mask the rest
+        var localPart = email.Substring(0, atIndex);
+        var domain = email.Substring(atIndex);
+
+        if (localPart.Length <= 1)
+        {
+            return $"*{domain}";
+        }
+
+        return $"{localPart[0]}***{domain}";
     }
 }

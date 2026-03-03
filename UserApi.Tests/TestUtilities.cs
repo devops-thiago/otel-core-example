@@ -1,49 +1,46 @@
 using System.Text.Json;
 using UserApi.DTOs;
 
-namespace UserApi.Tests
+namespace UserApi.Tests;
+
+public static class TestUtilities
 {
-    public static class TestUtilities
+    public static readonly JsonSerializerOptions JsonOptions = new()
     {
-        public static readonly JsonSerializerOptions JsonOptions = new()
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    public static StringContent CreateJsonContent<T>(T obj)
+    {
+        var json = JsonSerializer.Serialize(obj, JsonOptions);
+        return new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+    }
+
+    public static async Task<T?> DeserializeResponse<T>(HttpResponseMessage response)
+    {
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<T>(content, JsonOptions);
+    }
+
+    public static CreateUserDto CreateValidUserDto()
+    {
+        return new CreateUserDto
         {
-            PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            Name = "Test User",
+            Email = "test@example.com",
+            Bio = "Software Engineer"
         };
+    }
 
-        public static StringContent CreateJsonContent<T>(T obj)
+    public static UpdateUserDto CreateValidUpdateUserDto()
+    {
+        return new UpdateUserDto
         {
-            var json = JsonSerializer.Serialize(obj, JsonOptions);
-            return new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-        }
-
-        public static async Task<T?> DeserializeResponse<T>(HttpResponseMessage response)
-        {
-            var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<T>(content, JsonOptions);
-        }
-
-        public static CreateUserDto CreateValidUserDto()
-        {
-            return new CreateUserDto
-            {
-                FirstName = "Test",
-                LastName = "User",
-                Email = "test@example.com",
-                PhoneNumber = "+1234567890"
-            };
-        }
-
-        public static UpdateUserDto CreateValidUpdateUserDto()
-        {
-            return new UpdateUserDto
-            {
-                FirstName = "Updated",
-                LastName = "User",
-                Email = "updated@example.com",
-                PhoneNumber = "+0987654321"
-            };
-        }
+            Name = "Updated User",
+            Email = "updated@example.com",
+            Bio = "Senior Engineer"
+        };
     }
 }
 
