@@ -27,6 +27,7 @@ public class UserDtoValidationTests
 
     [Theory]
     [InlineData("")]
+    [InlineData("   ")]
     public void CreateUserDto_WithInvalidName_ShouldFailValidation(string name)
     {
         // Arrange

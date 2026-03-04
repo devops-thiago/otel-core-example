@@ -5,7 +5,8 @@ namespace UserApi.DTOs;
 public class CreateUserDto
 {
     [Required]
-    [StringLength(100)]
+    [StringLength(100, MinimumLength = 1)]
+    [RegularExpression(@".*\S.*", ErrorMessage = "Name cannot be whitespace only.")]
     public string Name { get; set; } = string.Empty;
 
     [Required]
