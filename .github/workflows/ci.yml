@@ -178,10 +178,23 @@ jobs:
     - name: Check coverage threshold
       run: |
         if [ -f "coverage/coverage.cobertura.xml" ]; then
-          dotnet tool install -g dotnet-coverage
-          dotnet coverage report coverage/coverage.cobertura.xml --threshold ${{ env.COVERAGE_THRESHOLD }}
+          # Extract line-rate from Cobertura XML root element
+          LINE_RATE=$(python3 -c "
+        import xml.etree.ElementTree as ET
+        tree = ET.parse('coverage/coverage.cobertura.xml')
+        print(tree.getroot().attrib.get('line-rate', '0'))
+        ")
+          COVERAGE=$(python3 -c "print(int(float('${LINE_RATE}') * 100))")
+          echo "Line coverage: ${COVERAGE}%"
+          if [ "$COVERAGE" -lt "${{ env.COVERAGE_THRESHOLD }}" ]; then
+            echo "::error::Coverage ${COVERAGE}% is below threshold ${{ env.COVERAGE_THRESHOLD }}%"
+            exit 1
+          else
+            echo "Coverage ${COVERAGE}% meets threshold ${{ env.COVERAGE_THRESHOLD }}%"
+          fi
         else
-          echo "Coverage report not found, skipping threshold check"
+          echo "::error::Coverage report not found at coverage/coverage.cobertura.xml"
+          exit 1
         fi
 
   security-scan:
