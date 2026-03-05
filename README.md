@@ -1,34 +1,17 @@
-# OpenTelemetry .NET Core User API
+# OpenTelemetry .NET Example
 
-[![Build Status](https://github.com/devops-thiago/otel-core-example/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/devops-thiago/otel-core-example/actions)
-[![Coverage](https://codecov.io/gh/devops-thiago/otel-core-example/branch/main/graph/badge.svg)](https://codecov.io/gh/devops-thiago/otel-core-example)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
-[![Code Coverage](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=coverage)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=bugs)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
-[![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
-[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-326CE5?logo=opentelemetry)](https://opentelemetry.io/)
-[![Dependabot](https://img.shields.io/badge/Dependabot-Enabled-025E8C?logo=dependabot)](https://github.com/devops-thiago/otel-core-example/network/dependencies)
+[![CI](https://img.shields.io/github/actions/workflow/status/devops-thiago/otel-core-example/ci.yml?branch=main&label=CI)](https://github.com/devops-thiago/otel-core-example/actions)
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/github/license/devops-thiago/otel-core-example)](LICENSE)
+[![Codecov](https://img.shields.io/codecov/c/github/devops-thiago/otel-core-example?label=coverage)](https://app.codecov.io/gh/devops-thiago/otel-core-example)
+[![Sonar Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![Sonar Coverage](https://sonarcloud.io/api/project_badges/measure?project=devops-thiago_otel-core-example&metric=coverage)](https://sonarcloud.io/summary/new_code?id=devops-thiago_otel-core-example)
+[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-enabled-blue?logo=opentelemetry)](https://opentelemetry.io)
+[![Docker](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com)
+[![Docker Hub](https://img.shields.io/docker/v/thiagosg/otel-crud-api-net-core?logo=docker&label=Docker%20Hub)](https://hub.docker.com/r/thiagosg/otel-crud-api-net-core)
+[![Docker Pulls](https://img.shields.io/docker/pulls/thiagosg/otel-crud-api-net-core)](https://hub.docker.com/r/thiagosg/otel-crud-api-net-core)
 
-A comprehensive .NET Core REST API example demonstrating user CRUD operations with OpenTelemetry integration and Alloy for observability.
-
-## 📊 Project Status
-
-- ✅ **Build Status**: [![Build Status](https://github.com/devops-thiago/otel-core-example/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/devops-thiago/otel-core-example/actions)
-- ✅ **Code Coverage**: 80%+ (target achieved)
-- ✅ **Code Quality**: SonarQube analysis enabled
-- ✅ **Security**: Vulnerability scanning enabled
-- ✅ **Linting**: EditorConfig + .NET analyzers
-- ✅ **Formatting**: dotnet format enforcement
+A production-ready .NET REST API example demonstrating user CRUD operations with OpenTelemetry integration and Alloy for observability.
 
 ## Features
 
