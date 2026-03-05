@@ -8,7 +8,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   DOTNET_VERSION: '10.0.x'
@@ -148,12 +148,12 @@ jobs:
       run: dotnet restore UserApi.sln
 
     - name: Run tests
-      run: dotnet test UserApi.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+      run: dotnet test UserApi.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage --settings coverlet.runsettings
 
     - name: Generate coverage report
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
-        reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:"Html;Cobertura;OpenCover"
+        reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:"Html;Cobertura;SonarQube"
         # Copy the generated Cobertura file to the expected location
         cp coverage/report/Cobertura.xml coverage/coverage.cobertura.xml
 
@@ -168,7 +168,7 @@ jobs:
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de
       with:
-        file: ./coverage/coverage.cobertura.xml
+        files: ./coverage/coverage.cobertura.xml
         flags: unittests
         name: codecov-umbrella
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -177,11 +177,24 @@ jobs:
 
     - name: Check coverage threshold
       run: |
-        if [ -f "coverage/report/OpenCover.xml" ]; then
-          dotnet tool install -g dotnet-coverage
-          dotnet coverage report coverage/report/OpenCover.xml --threshold ${{ env.COVERAGE_THRESHOLD }}
+        if [ -f "coverage/coverage.cobertura.xml" ]; then
+          # Extract line-rate from Cobertura XML root element
+          LINE_RATE=$(python3 -c "
+        import xml.etree.ElementTree as ET
+        tree = ET.parse('coverage/coverage.cobertura.xml')
+        print(tree.getroot().attrib.get('line-rate', '0'))
+        ")
+          COVERAGE=$(python3 -c "print(int(float('${LINE_RATE}') * 100))")
+          echo "Line coverage: ${COVERAGE}%"
+          if [ "$COVERAGE" -lt "${{ env.COVERAGE_THRESHOLD }}" ]; then
+            echo "::error::Coverage ${COVERAGE}% is below threshold ${{ env.COVERAGE_THRESHOLD }}%"
+            exit 1
+          else
+            echo "Coverage ${COVERAGE}% meets threshold ${{ env.COVERAGE_THRESHOLD }}%"
+          fi
         else
-          echo "OpenCover report not found, skipping threshold check"
+          echo "::error::Coverage report not found at coverage/coverage.cobertura.xml"
+          exit 1
         fi
 
   security-scan:
@@ -247,6 +260,7 @@ jobs:
       uses: actions/download-artifact@v8
       with:
         name: coverage-reports
+        path: coverage
 
     - name: Install SonarCloud scanner
       run: |
@@ -282,9 +296,8 @@ jobs:
             /d:sonar.pullrequest.key="$PR_NUMBER" \
             /d:sonar.pullrequest.branch="$BRANCH_NAME" \
              /d:sonar.pullrequest.base="$BASE_BRANCH" \
-            /d:sonar.cs.opencover.reportsPaths="coverage/report/OpenCover.xml" \
-            /d:sonar.cs.cobertura.reportsPaths="coverage/**/coverage.cobertura.xml" \
-            /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
+            /d:sonar.coverageReportPaths="coverage/report/SonarQube.xml" \
+            /d:sonar.coverage.exclusions="**/Program.cs,**/Models/**,**/DTOs/**,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
             /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**,**/coverage/**,**/test-coverage/**,**/TestResults/**,**/*.coverage,**/*.coveragexml,**/*.cobertura.xml"
         else
           dotnet sonarscanner begin \
@@ -295,9 +308,8 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.branch.name="${{ github.ref_name }}" \
-            /d:sonar.cs.opencover.reportsPaths="coverage/report/OpenCover.xml" \
-            /d:sonar.cs.cobertura.reportsPaths="coverage/**/coverage.cobertura.xml" \
-            /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
+            /d:sonar.coverageReportPaths="coverage/report/SonarQube.xml" \
+            /d:sonar.coverage.exclusions="**/Program.cs,**/Models/**,**/DTOs/**,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
             /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**,**/coverage/**,**/test-coverage/**,**/TestResults/**,**/*.coverage,**/*.coveragexml,**/*.cobertura.xml"
         fi
 
@@ -326,13 +338,13 @@ jobs:
           echo "Will use individual coverage files: coverage/**/coverage.cobertura.xml"
         fi
 
-        if [ -f "coverage/report/OpenCover.xml" ]; then
-          echo "✓ Found OpenCover file: coverage/report/OpenCover.xml"
+        if [ -f "coverage/report/SonarQube.xml" ]; then
+          echo "✓ Found SonarQube coverage file: coverage/report/SonarQube.xml"
         else
-          echo "✗ OpenCover file not found - reportgenerator may have failed"
+          echo "✗ SonarQube coverage file not found - reportgenerator may have failed"
           echo "Attempting to regenerate reports..."
           dotnet tool install -g dotnet-reportgenerator-globaltool || echo "ReportGenerator already installed"
-          reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:"Html;Cobertura;OpenCover" || echo "Report generation failed"
+          reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:"Html;Cobertura;SonarQube" || echo "Report generation failed"
 
           if [ -f "coverage/report/Cobertura.xml" ]; then
             cp coverage/report/Cobertura.xml coverage/coverage.cobertura.xml || echo "Failed to copy consolidated report"
@@ -341,7 +353,7 @@ jobs:
         fi
 
         echo "=== Final coverage file verification ==="
-        ls -la coverage/coverage.cobertura.xml coverage/report/OpenCover.xml 2>/dev/null || echo "Some consolidated files missing"
+        ls -la coverage/coverage.cobertura.xml coverage/report/SonarQube.xml 2>/dev/null || echo "Some consolidated files missing"
 
     - name: End SonarCloud analysis
       env:
@@ -350,6 +362,52 @@ jobs:
       run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
 
   docker-build:
+    runs-on: ubuntu-latest
+    needs: [build, test, code-quality]
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+    - name: Build Docker image for PR validation
+      uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+      with:
+        context: .
+        push: false
+        tags: otel-core-example:pr-${{ github.event.pull_request.number }}
+        load: true
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Verify Docker image was built
+      run: |
+        echo "Listing Docker images:"
+        docker images
+        echo "Checking if our image exists:"
+        docker inspect otel-core-example:pr-${{ github.event.pull_request.number }}
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@97e0b3872f55f89b95b2f65b3dbab56962816478 # 0.34.2
+      with:
+        image-ref: otel-core-example:pr-${{ github.event.pull_request.number }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        exit-code: '0'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@c793b717bc78562f491db7b0e93a3a178b099162 # v4
+      if: ${{ always() && github.event.pull_request.head.repo.full_name == github.repository }}
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  docker-publish:
     runs-on: ubuntu-latest
     needs: [build, test, code-quality]
     if: github.ref == 'refs/heads/main'
@@ -362,10 +420,10 @@ jobs:
       uses: actions/checkout@v6
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
     - name: Login to Docker Hub
-      uses: docker/login-action@v3
+      uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
@@ -393,7 +451,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [docker-build]
+    needs: [docker-publish]
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: read

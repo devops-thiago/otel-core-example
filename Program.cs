@@ -1,17 +1,17 @@
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Logs;
 using Serilog;
 using UserApi.Data;
-using UserApi.Services;
 using UserApi.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using System.Text.Json;
-using System.Diagnostics.Metrics;
-using System.Diagnostics;
+using UserApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
