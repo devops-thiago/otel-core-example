@@ -297,7 +297,7 @@ jobs:
             /d:sonar.pullrequest.branch="$BRANCH_NAME" \
              /d:sonar.pullrequest.base="$BASE_BRANCH" \
             /d:sonar.coverageReportPaths="coverage/report/SonarQube.xml" \
-            /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
+            /d:sonar.coverage.exclusions="**/Program.cs,**/Models/**,**/DTOs/**,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
             /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**,**/coverage/**,**/test-coverage/**,**/TestResults/**,**/*.coverage,**/*.coveragexml,**/*.cobertura.xml"
         else
           dotnet sonarscanner begin \
@@ -309,7 +309,7 @@ jobs:
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.branch.name="${{ github.ref_name }}" \
             /d:sonar.coverageReportPaths="coverage/report/SonarQube.xml" \
-            /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
+            /d:sonar.coverage.exclusions="**/Program.cs,**/Models/**,**/DTOs/**,**/Migrations/**,**/bin/**,**/obj/**,**/*Tests*/**" \
             /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**,**/coverage/**,**/test-coverage/**,**/TestResults/**,**/*.coverage,**/*.coveragexml,**/*.cobertura.xml"
         fi
 
