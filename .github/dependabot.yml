@@ -24,6 +24,11 @@ updates:
       prefix: "chore"
       prefix-development: "chore"
       include: "scope"
+    # Ignore major version bumps that introduce breaking API changes incompatible with the current stack
+    ignore:
+      - dependency-name: "Microsoft.OpenApi"
+        update-types:
+          - "version-update:semver-major"
     # Group related updates together
     groups:
       opentelemetry:
