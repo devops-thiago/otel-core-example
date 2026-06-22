@@ -178,11 +178,13 @@ public class UserService : IUserService
         var localPart = email.Substring(0, atIndex);
         var domain = email.Substring(atIndex);
 
-        if (localPart.Length <= 1)
-        {
-            return $"*{domain}";
-        }
+        // Strip line breaks/control characters to prevent log forging (CWE-117)
+        var masked = localPart.Length <= 1 ? $"*{domain}" : $"{localPart[0]}***{domain}";
+        return RemoveLineBreaks(masked);
+    }
 
-        return $"{localPart[0]}***{domain}";
+    private static string RemoveLineBreaks(string value)
+    {
+        return value.Replace("\r", string.Empty).Replace("\n", string.Empty);
     }
 }

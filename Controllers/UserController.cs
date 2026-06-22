@@ -96,8 +96,8 @@ public class UserController : ControllerBase
         {
             var sanitizedEmail = SanitizeEmailForLogging(createUserDto.Email);
             _logger.LogWarning(ex, "Invalid operation while creating user with email {Email}", sanitizedEmail);
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            return Conflict(ex.Message);
+            activity?.SetStatus(ActivityStatusCode.Error, "Invalid operation while creating user");
+            return Conflict("A user with this email already exists.");
         }
         catch (Exception ex)
         {
@@ -138,8 +138,8 @@ public class UserController : ControllerBase
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Invalid operation while updating user with ID {UserId}", id);
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            return Conflict(ex.Message);
+            activity?.SetStatus(ActivityStatusCode.Error, "Invalid operation while updating user");
+            return Conflict("A user with this email already exists.");
         }
         catch (Exception ex)
         {
@@ -195,12 +195,14 @@ public class UserController : ControllerBase
         var localPart = email.Substring(0, atIndex);
         var domain = email.Substring(atIndex);
 
-        if (localPart.Length <= 1)
-        {
-            return $"*{domain}";
-        }
+        // Strip line breaks/control characters to prevent log forging (CWE-117)
+        var masked = localPart.Length <= 1 ? $"*{domain}" : $"{localPart[0]}***{domain}";
+        return RemoveLineBreaks(masked);
+    }
 
-        return $"{localPart[0]}***{domain}";
+    private static string RemoveLineBreaks(string value)
+    {
+        return value.Replace("\r", string.Empty).Replace("\n", string.Empty);
     }
 
     private static string GetEmailDomain(string email)
