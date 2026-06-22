@@ -107,7 +107,7 @@ public class UserControllerUnitTests
 
         // Assert
         var conflictResult = result.Result.Should().BeOfType<ConflictObjectResult>().Subject;
-        conflictResult.Value.Should().Be("User already exists");
+        conflictResult.Value.Should().Be("A user with this email already exists.");
     }
 
     [Fact]
@@ -157,7 +157,7 @@ public class UserControllerUnitTests
 
         // Assert
         var conflictResult = result.Result.Should().BeOfType<ConflictObjectResult>().Subject;
-        conflictResult.Value.Should().Be("Email already exists");
+        conflictResult.Value.Should().Be("A user with this email already exists.");
     }
 
     [Fact]

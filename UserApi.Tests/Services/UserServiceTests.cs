@@ -113,6 +113,40 @@ public class UserServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateUserAsync_WithEmptyEmail_ShouldMaskEmailInLogs()
+    {
+        // Arrange — an empty email exercises the SanitizeEmail "[empty]" branch
+        // used to keep logs free of unsanitized (log-forging) input.
+        var createUserDto = _fixture.Build<CreateUserDto>()
+            .With(x => x.Email, string.Empty)
+            .Create();
+
+        // Act
+        var result = await _userService.CreateUserAsync(createUserDto);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Email.Should().Be(string.Empty);
+    }
+
+    [Fact]
+    public async Task CreateUserAsync_WithSingleCharLocalPartEmail_ShouldMaskEmailInLogs()
+    {
+        // Arrange — a single-character local part exercises the
+        // `localPart.Length <= 1` branch of SanitizeEmail's masking.
+        var createUserDto = _fixture.Build<CreateUserDto>()
+            .With(x => x.Email, "a@example.com")
+            .Create();
+
+        // Act
+        var result = await _userService.CreateUserAsync(createUserDto);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Email.Should().Be("a@example.com");
+    }
+
+    [Fact]
     public async Task CreateUserAsync_WithDuplicateEmail_ShouldThrowInvalidOperationException()
     {
         // Arrange
